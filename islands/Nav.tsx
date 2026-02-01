@@ -19,25 +19,21 @@ export default function Nav() {
     fetchWorkLinks();
   }, []);
 
-  const handleWorkOpen = () => {
-    setIsWorkOpen(!isWorkOpen);
-    setIsClosing(false);
-  };
-
   const handleModalClose = () => {
-    setIsWorkOpen(false);
     setIsClosing(true);
     setTimeout(() => {
+      setIsWorkOpen(false);
       setIsClosing(false);
-    }, 500);
+    }, 300);
   };
 
-  const handleWorkLinkClick = (e: Event, href: string) => {
-    e.preventDefault();
-    setIsClosing(true);
-    setTimeout(() => {
-      globalThis.location.href = href;
-    }, 500);
+  const handleWorkOpen = () => {
+    if (isWorkOpen) {
+      handleModalClose();
+    } else {
+      setIsWorkOpen(true);
+      setIsClosing(false);
+    }
   };
 
   return (
@@ -69,8 +65,12 @@ export default function Nav() {
           </ul>
         </div>
       </nav>
-      {isWorkOpen && (
-        <div class={`fixed inset-0 bg-gray-50 z-[100] flex items-center justify-center`}>
+      {(isWorkOpen || isClosing) && (
+        <div
+          class={`fixed inset-0 bg-gray-50 z-[100] flex items-center justify-center transition-opacity duration-300 ${
+            isClosing ? "opacity-0" : "opacity-100"
+          }`}
+        >
           <button
             type="button"
             onClick={handleModalClose}
@@ -78,12 +78,15 @@ export default function Nav() {
           >
             ×
           </button>
-          <ul class="flex flex-col gap-8 items-center">
+          <ul
+            class={`flex flex-col gap-8 items-center transition-all duration-300 ${
+              isClosing ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+            }`}
+          >
             {workLinks.map((link) => (
               <li key={link.href}>
                 <a
                   href={link.href}
-                  onClick={(e) => handleWorkLinkClick(e, link.href)}
                   class="group text-gray-900 font-[200] italic transition duration-300 text-3xl"
                 >
                   {link.label}
