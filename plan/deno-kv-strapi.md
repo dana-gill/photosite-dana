@@ -1,7 +1,7 @@
 # Deno KV + Strapi Caching Implementation Plan
 
 ## Overview
-Implement a hybrid caching layer using Deno KV and in-memory storage to organize and serve Strapi images by album prefix (e.g., `meri2025_IMG_2222.jpg`).
+Implement a caching layer using Deno KV to organize and serve Strapi images by album prefix (e.g., `meri2025_IMG_2222.jpg`).
 
 ## Architecture
 
@@ -11,9 +11,8 @@ Strapi (Source) → Fetch All Images → Parse & Group by Prefix → Store in Ca
 ```
 
 ### Cache Layers
-1. **Primary**: In-memory Map for instant lookups
-2. **Backup**: Deno KV for persistence across restarts
-3. **Source**: Strapi REST API (`/api/upload/files`)
+1. **Cache**: Deno KV for persistent storage and fast lookups
+2. **Source**: Strapi REST API (`/api/upload/files`)
 
 ## Implementation Steps
 
@@ -30,20 +29,23 @@ Create types file for Strapi image responses and album structures.
 Create service to fetch and organize images from Strapi.
 
 **File**: `services/image-service.ts`
-- `fetchAllImagesFromStrapi()` - Fetch all images from Strapi
-- `extractAlbumPrefix()` - Extract album name from filename
-- `groupImagesByAlbum()` - Organize images into album groups
-- `refreshCache()` - Update both cache layers
+- `fetchAllImagesFromStrapi()` - Fetch all images from Strapi API
+- `extractAlbumPrefix()` - Extract album name from filename (e.g., "meri2025" from "meri2025_IMG_2222.jpg")
+- `groupImagesByAlbum()` - Organize images into Map<albumName, images[]>
+- `refreshCache()` - Orchestrate full refresh: fetch → group → call cache manager's `saveAllAlbums()` to write to KV
 
 ### Step 3: Implement Cache Manager
-Create cache manager with dual-layer storage.
+Create cache manager using Deno KV.
 
 **File**: `services/cache-manager.ts`
-- `initializeCache()` - Set up Deno KV and in-memory Map
-- `getImagesByAlbum()` - Retrieve images for specific album
-- `getAllAlbums()` - List all available albums
-- `getCacheMetadata()` - Get cache stats (last refresh, image count)
-- `clearCache()` - Reset both cache layers
+- `initializeCache()` - Open Deno KV connection
+- `saveToCache(albumName, images)` - **Write to KV**: Call `kv.set(['albums', albumName], images)`
+- `saveAllAlbums(albumsMap)` - **Iterate and write all albums**: Loop through grouped albums and call `kv.set()` for each
+- `saveCacheMetadata(metadata)` - **Write metadata to KV**: Call `kv.set(['cache', 'metadata'], metadata)`
+- `getImagesByAlbum(albumName)` - Retrieve images for specific album: Call `kv.get(['albums', albumName])`
+- `getAllAlbums()` - List all available albums by scanning KV with prefix `['albums']`
+- `getCacheMetadata()` - Get cache stats (last refresh, image count) from KV
+- `clearCache()` - Delete all KV entries with prefix `['albums']` and `['cache']`
 
 ### Step 4: Create API Routes
 Build Fresh API routes to serve cached images.
@@ -96,27 +98,32 @@ const prefix = filename.split('_')[0];
 
 ### Cache Structure (Deno KV)
 ```typescript
+// Store album images
 // Key: ['albums', albumName]
 // Value: StrapiImage[]
-kv.set(['albums', 'meri2025'], images);
-kv.set(['cache', 'metadata'], { lastRefresh: Date, totalImages: number });
-```
+await kv.set(['albums', 'meri2025'], images);
+await kv.set(['albums', 'wedding2024'], images);
 
-### Cache Structure (In-Memory)
-```typescript
-// Map<albumName, StrapiImage[]>
-const albumCache = new Map([
-  ['meri2025', [...images]],
-  ['wedding2024', [...images]]
-]);
+// Store cache metadata
+// Key: ['cache', 'metadata']
+// Value: { lastRefresh: Date, totalImages: number }
+await kv.set(['cache', 'metadata'], {
+  lastRefresh: new Date(),
+  totalImages: 150
+});
+
+// Retrieve album images
+const result = await kv.get(['albums', 'meri2025']);
+const images = result.value; // StrapiImage[]
 ```
 
 ## Performance Considerations
 
-- **Initial Load**: ~1-3 seconds to fetch and cache all images
-- **Subsequent Requests**: <10ms from in-memory cache
-- **Persistence**: Deno KV ensures cache survives restarts
+- **Initial Load**: ~1-3 seconds to fetch and cache all images from Strapi
+- **Subsequent Requests**: <10ms from Deno KV (local SQLite in dev, distributed in production)
+- **Persistence**: Deno KV automatically persists data across restarts
 - **Refresh Strategy**: Background refresh prevents blocking requests
+- **Scalability**: Deno KV handles replication and distribution in production
 
 ## Error Handling
 
@@ -134,8 +141,9 @@ const albumCache = new Map([
 
 ## Success Criteria
 
-- ✅ Images organized by album prefix
+- ✅ Images organized by album prefix in Deno KV
 - ✅ Fast lookups (<10ms) for cached albums
 - ✅ Cache persists across server restarts
-- ✅ Automatic background refresh
+- ✅ Automatic background refresh from Strapi
 - ✅ Clean API for frontend consumption
+- ✅ Simple, maintainable codebase (single source of truth)
