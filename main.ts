@@ -1,7 +1,17 @@
 import { App, staticFiles } from "fresh";
 import { define, type State } from "./utils.ts";
+import { refreshCache } from "./services/image-service.ts";
+import { startCacheRefreshScheduler } from "./services/scheduler.ts";
 
 export const app = new App<State>();
+
+// Initialize cache on startup
+console.log("Initializing cache from Strapi...");
+await refreshCache();
+console.log("Cache initialized successfully");
+
+// Start background refresh scheduler
+startCacheRefreshScheduler();
 
 app.use(staticFiles());
 
