@@ -3,7 +3,6 @@ import type { NavLink } from "../types/nav.ts";
 
 const navLinks: ReadonlyArray<NavLink> = [
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
 ];
 
 const workLinks: ReadonlyArray<NavLink> = [
