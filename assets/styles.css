@@ -5,6 +5,24 @@
   font-family: 'Inter', sans-serif;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in-title {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.fade-in-images {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in 0.5s forwards;
+}
+
 .fresh-gradient {
   background-color: rgb(134, 239, 172);
   background-image: linear-gradient(

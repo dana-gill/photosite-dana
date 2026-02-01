@@ -24,7 +24,7 @@ export default define.page<typeof handler>(function MeriInPberg({ data }) {
         <SectionTitle>Meri in Pberg</SectionTitle>
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {images.map((image: StrapiImage) => (
-            <div key={image.id} class="overflow-hidden max-w-lg">
+            <div key={image.id} class="overflow-hidden max-w-lg fade-in-images">
               <Image
                 src={image.url}
                 alt={image.alternativeText ?? image.name}

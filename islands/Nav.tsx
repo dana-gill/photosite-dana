@@ -43,7 +43,7 @@ export default function Nav() {
               <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900"></span>
             </button>
             {isWorkOpen && (
-              <ul class="absolute top-full right-0 mt-2 flex flex-col gap-2">
+              <ul class="absolute top-full right-0 mt-2 flex flex-col gap-2 fade-in-title">
                 {workLinks.map((link) => (
                   <li key={link.href}>
                     <a
