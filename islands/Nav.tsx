@@ -19,20 +19,20 @@ export default function Nav() {
     fetchWorkLinks();
   }, []);
 
-  const handleWorkClick = () => {
+  const handleWorkOpen = () => {
     setIsWorkOpen(!isWorkOpen);
     setIsClosing(false);
   };
 
-  const handleClose = () => {
+  const handleModalClose = () => {
+    setIsWorkOpen(false);
     setIsClosing(true);
     setTimeout(() => {
-      setIsWorkOpen(false);
       setIsClosing(false);
     }, 500);
   };
 
-  const handleLinkClick = (e: Event, href: string) => {
+  const handleWorkLinkClick = (e: Event, href: string) => {
     e.preventDefault();
     setIsClosing(true);
     setTimeout(() => {
@@ -59,7 +59,7 @@ export default function Nav() {
             <li>
               <button
                 type="button"
-                onClick={handleWorkClick}
+                onClick={handleWorkOpen}
                 class="group text-gray-900 font-[500] transition duration-300 cursor-pointer bg-transparent border-none p-0"
               >
                 Work
@@ -70,10 +70,10 @@ export default function Nav() {
         </div>
       </nav>
       {isWorkOpen && (
-        <div class={`fixed inset-0 bg-gray-50 z-[100] flex items-center justify-center ${isClosing ? 'fade-out' : 'fade-in-title'}`}>
+        <div class={`fixed inset-0 bg-gray-50 z-[100] flex items-center justify-center`}>
           <button
             type="button"
-            onClick={handleClose}
+            onClick={handleModalClose}
             class="absolute top-8 left-8 text-4xl text-gray-900 bg-transparent border-none cursor-pointer p-0 hover:opacity-70 transition-opacity"
           >
             ×
@@ -83,7 +83,7 @@ export default function Nav() {
               <li key={link.href}>
                 <a
                   href={link.href}
-                  onClick={(e) => handleLinkClick(e, link.href)}
+                  onClick={(e) => handleWorkLinkClick(e, link.href)}
                   class="group text-gray-900 font-[200] italic transition duration-300 text-3xl"
                 >
                   {link.label}
