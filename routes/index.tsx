@@ -1,16 +1,17 @@
 import type { StrapiImage } from "../types/strapi.ts";
 import { Head } from "fresh/runtime";
+import { Image } from "../components/Image.tsx";
 import { define } from "../utils.ts";
 import { getImagesByAlbum } from "../services/cache-manager.ts";
 
 export const handler = define.handlers({
-  GET: async (ctx) => {
+  GET: async (_ctx) => {
     const images = await getImagesByAlbum("meri2025") ?? [];
     return { data: images };
   },
 });
 
-export default define.page<ReadonlyArray<StrapiImage>>(function Home({ data }) {
+export default define.page<typeof handler>(function Home({ data }) {
   const images = data;
 
   return (
@@ -20,16 +21,14 @@ export default define.page<ReadonlyArray<StrapiImage>>(function Home({ data }) {
       </Head>
       <div class="max-w-7xl mx-auto">
         <h1 class="text-4xl font-bold mb-8 text-center">Meri 2025</h1>
-        <div class="flex flex-wrap justify-evenly gap-6">
-          {images.map((image) => (
-            <div key={image.id} class="bg-white overflow-hidden max-w-lg">
-              <img
+        <div class="flex flex-wrap justify-evenly gap-6 items-center">
+          {images.map((image: StrapiImage) => (
+            <div key={image.id} class="overflow-hidden max-w-lg">
+              <Image
                 src={image.url}
                 alt={image.alternativeText ?? image.name}
                 width={image.width}
                 height={image.height}
-                class="w-full h-auto max-h-96"
-                loading="lazy"
               />
               {image.caption && (
                 <div class="p-4">
