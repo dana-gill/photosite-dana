@@ -9,6 +9,14 @@ export const extractAlbumPrefix = (filename: string): string => {
   return parts[0] ?? filename;
 };
 
+export const extractNumericSuffix = (filename: string): number => {
+  const withoutExtension = filename.replace(/\.[^.]+$/, "");
+  const parts = withoutExtension.split("_");
+  const lastPart = parts[parts.length - 1];
+  const numericValue = lastPart ? parseInt(lastPart, 10) : 0;
+  return isNaN(numericValue) ? 0 : numericValue;
+};
+
 export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiImage>> => {
   const url = `${STRAPI_URL}api/upload/files`;
 
@@ -49,8 +57,19 @@ export const groupImagesByAlbum = (images: ReadonlyArray<StrapiImage>): AlbumIma
   });
 
   return new Map(
-    Array.from(albumsMap.entries()).map(([key, value]) => [key, value as ReadonlyArray<StrapiImage>])
+    Array.from(albumsMap.entries()).map(([key, value]) => [
+      key,
+      sortImagesByNumericSuffix(value)
+    ])
   );
+};
+
+export const sortImagesByNumericSuffix = (images: ReadonlyArray<StrapiImage>): ReadonlyArray<StrapiImage> => {
+  return [...images].sort((a, b) => {
+    const numA = extractNumericSuffix(a.name);
+    const numB = extractNumericSuffix(b.name);
+    return numA - numB;
+  });
 };
 
 export const refreshCache = async (): Promise<void> => {
