@@ -1,48 +1,9 @@
-import type { StrapiImage } from "../types/strapi.ts";
-import { Head } from "fresh/runtime";
-import { Image } from "../components/Image.tsx";
-import { SectionTitle } from "../components/SectionTitle.tsx";
-import { define } from "../utils.ts";
-import { getImagesByAlbum } from "../services/cache-manager.ts";
+import { LandingPageTitle } from "../components/LandingPageTitle.tsx";
 
-export const handler = define.handlers({
-  GET: async (_ctx) => {
-    const images = await getImagesByAlbum("meri2025") ?? [];
-    return { data: images };
-  },
-});
-
-export default define.page<typeof handler>(function Home({ data }) {
-  const images = data;
-
+export default function Home() {
   return (
-    <div class="px-4 py-8 mx-auto min-h-screen bg-gray-50">
-      <Head>
-        <title>Meri 2025 Photos</title>
-      </Head>
-      <div class="max-w-7xl mx-auto">
-        <SectionTitle>Meri 2025</SectionTitle>
-        <div class="flex flex-wrap justify-evenly gap-6 items-center">
-          {images.map((image: StrapiImage) => (
-            <div key={image.id} class="overflow-hidden max-w-lg">
-              <Image
-                src={image.url}
-                alt={image.alternativeText ?? image.name}
-                width={image.width}
-                height={image.height}
-              />
-              {image.caption && (
-                <div class="p-4">
-                  <p class="text-sm text-gray-600">{image.caption}</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        {images.length === 0 && (
-          <p class="text-center text-gray-500 mt-8">No images found</p>
-        )}
-      </div>
+    <div class="px-4 py-8 mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
+      <LandingPageTitle>Dana Gill Photography</LandingPageTitle>
     </div>
   );
-});
+}
