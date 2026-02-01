@@ -1,18 +1,23 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import type { NavLink } from "../types/nav.ts";
 
 const navLinks: ReadonlyArray<NavLink> = [
   { href: "/about", label: "About" },
 ];
 
-const workLinks: ReadonlyArray<NavLink> = [
-  { href: "/work/meri-in-pberg", label: "Meri in Pberg" },
-  { href: "/work/sunchasing", label: "Sunchasing" },
-];
-
 export default function Nav() {
   const [isWorkOpen, setIsWorkOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [workLinks, setWorkLinks] = useState<ReadonlyArray<NavLink>>([]);
+
+  useEffect(() => {
+    const fetchWorkLinks = async () => {
+      const response = await fetch("/api/work-links");
+      const links = await response.json();
+      setWorkLinks(links);
+    };
+    fetchWorkLinks();
+  }, []);
 
   const handleWorkClick = () => {
     setIsWorkOpen(!isWorkOpen);
@@ -31,7 +36,7 @@ export default function Nav() {
     e.preventDefault();
     setIsClosing(true);
     setTimeout(() => {
-      window.location.href = href;
+      globalThis.location.href = href;
     }, 500);
   };
 
