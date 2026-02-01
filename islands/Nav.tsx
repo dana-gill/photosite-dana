@@ -27,6 +27,14 @@ export default function Nav() {
     }, 500);
   };
 
+  const handleLinkClick = (e: Event, href: string) => {
+    e.preventDefault();
+    setIsClosing(true);
+    setTimeout(() => {
+      window.location.href = href;
+    }, 500);
+  };
+
   return (
     <>
       <nav class="w-full bg-transparent fixed top-0 left-0 z-50">
@@ -70,7 +78,7 @@ export default function Nav() {
               <li key={link.href}>
                 <a
                   href={link.href}
-                  onClick={handleClose}
+                  onClick={(e) => handleLinkClick(e, link.href)}
                   class="group text-gray-900 font-[200] italic transition duration-300 text-3xl"
                 >
                   {link.label}
