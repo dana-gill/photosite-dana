@@ -1,4 +1,4 @@
-import { Nav } from "../components/Nav.tsx";
+import Nav from "../islands/Nav.tsx";
 import { define } from "../utils.ts";
 
 export default define.page(function App({ Component }) {
