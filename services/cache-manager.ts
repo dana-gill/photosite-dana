@@ -1,3 +1,5 @@
+/// <reference lib="deno.unstable" />
+
 import type { AlbumImages, CacheMetadata, StrapiImage } from "../types/strapi.ts";
 
 let kv: Deno.Kv | null = null;
