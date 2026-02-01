@@ -1,4 +1,4 @@
-import type { AlbumImages, StrapiFileResponse, StrapiImage } from "../types/strapi.ts";
+import type { AlbumImages, StrapiImage } from "../types/strapi.ts";
 import { saveAllAlbums } from "./cache-manager.ts";
 
 const STRAPI_API_TOKEN = Deno.env.get("STRAPI_API_TOKEN") ?? "";
@@ -9,8 +9,8 @@ export const extractAlbumPrefix = (filename: string): string => {
   return parts[0] ?? filename;
 };
 
-const fetchPageFromStrapi = async (page: number, pageSize: number): Promise<StrapiFileResponse> => {
-  const url = `${STRAPI_URL}api/upload/files?pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiImage>> => {
+  const url = `${STRAPI_URL}api/upload/files`;
 
   const response = await fetch(url, {
     headers: {
@@ -22,23 +22,21 @@ const fetchPageFromStrapi = async (page: number, pageSize: number): Promise<Stra
   const isSuccess = response.ok;
 
   if (!isSuccess) {
+    const errorText = await response.text();
+    console.error(`Strapi API error (${response.status}):`, errorText);
     throw new Error(`Failed to fetch images from Strapi: ${response.statusText}`);
   }
 
-  return await response.json();
-};
+  const data = await response.json();
 
-export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiImage>> => {
-  const pageSize = 100;
-  const firstPage = await fetchPageFromStrapi(1, pageSize);
-  const totalPages = firstPage.meta.pagination.pageCount;
+  if (!Array.isArray(data)) {
+    console.error("Invalid Strapi response structure:", JSON.stringify(data, null, 2));
+    throw new Error(
+      `Strapi API returned unexpected structure. Expected an array but response was: ${JSON.stringify(data).substring(0, 200)}`
+    );
+  }
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-  const allPages = await Promise.all(
-    pageNumbers.map((page) => fetchPageFromStrapi(page, pageSize))
-  );
-
-  return allPages.flatMap((pageData) => pageData.data);
+  return data;
 };
 
 export const groupImagesByAlbum = (images: ReadonlyArray<StrapiImage>): AlbumImages => {
