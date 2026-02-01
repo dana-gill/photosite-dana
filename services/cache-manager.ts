@@ -1,20 +1,28 @@
 import type { AlbumImages, CacheMetadata, StrapiImage } from "../types/strapi.ts";
 
-const kv = await Deno.openKv();
+let kv: Deno.Kv | null = null;
+
+const getKv = async (): Promise<Deno.Kv> => {
+  if (!kv) {
+    kv = await Deno.openKv();
+  }
+  return kv;
+};
 
 export const clearCache = async (): Promise<void> => {
-  const albumEntries = kv.list({ prefix: ["albums"] });
-  const cacheEntries = kv.list({ prefix: ["cache"] });
+  const kvInstance = await getKv();
+  const albumEntries = kvInstance.list({ prefix: ["albums"] });
+  const cacheEntries = kvInstance.list({ prefix: ["cache"] });
 
   const deleteAlbums = (async () => {
     for await (const entry of albumEntries) {
-      await kv.delete(entry.key);
+      await kvInstance.delete(entry.key);
     }
   })();
 
   const deleteCache = (async () => {
     for await (const entry of cacheEntries) {
-      await kv.delete(entry.key);
+      await kvInstance.delete(entry.key);
     }
   })();
 
@@ -22,7 +30,8 @@ export const clearCache = async (): Promise<void> => {
 };
 
 export const getAllAlbums = async (): Promise<ReadonlyArray<string>> => {
-  const entries = kv.list({ prefix: ["albums"] });
+  const kvInstance = await getKv();
+  const entries = kvInstance.list({ prefix: ["albums"] });
   const albumNames: string[] = [];
 
   for await (const entry of entries) {
@@ -36,12 +45,14 @@ export const getAllAlbums = async (): Promise<ReadonlyArray<string>> => {
 };
 
 export const getCacheMetadata = async (): Promise<CacheMetadata | null> => {
-  const result = await kv.get<CacheMetadata>(["cache", "metadata"]);
+  const kvInstance = await getKv();
+  const result = await kvInstance.get<CacheMetadata>(["cache", "metadata"]);
   return result.value;
 };
 
 export const getImagesByAlbum = async (albumName: string): Promise<ReadonlyArray<StrapiImage> | null> => {
-  const result = await kv.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
+  const kvInstance = await getKv();
+  const result = await kvInstance.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
   return result.value;
 };
 
@@ -70,12 +81,14 @@ export const saveAllAlbums = async (albumsMap: AlbumImages): Promise<void> => {
 };
 
 export const saveCacheMetadata = async (metadata: CacheMetadata): Promise<void> => {
-  await kv.set(["cache", "metadata"], metadata);
+  const kvInstance = await getKv();
+  await kvInstance.set(["cache", "metadata"], metadata);
 };
 
 export const saveToCache = async (
   albumName: string,
   images: ReadonlyArray<StrapiImage>
 ): Promise<void> => {
-  await kv.set(["albums", albumName], images);
+  const kvInstance = await getKv();
+  await kvInstance.set(["albums", albumName], images);
 };
