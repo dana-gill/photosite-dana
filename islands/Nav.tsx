@@ -27,7 +27,7 @@ export default function Nav() {
             <li key={link.href}>
               <a
                 href={link.href}
-                class="text-gray-900 font-[500] hover:text-gray-600 transition-colors"
+                class="text-gray-900 font-[500] hover:underline transition-colors"
               >
                 {link.label}
               </a>
@@ -36,7 +36,7 @@ export default function Nav() {
           <li class="relative">
             <button
               onClick={handleWorkClick}
-              class="text-gray-900 font-[500] hover:text-gray-600 transition-colors cursor-pointer bg-transparent border-none"
+              class="text-gray-900 font-[500] hover:underline transition-colors cursor-pointer bg-transparent border-none"
             >
               Work
             </button>
@@ -47,7 +47,7 @@ export default function Nav() {
                     <a
                       href={link.href}
                       onClick={() => setIsWorkOpen(false)}
-                      class="text-gray-900 font-[200] italic hover:text-gray-600 transition-colors whitespace-nowrap"
+                      class="text-gray-900 font-[200] italic hover:underline transition-colors whitespace-nowrap"
                     >
                       {link.label}
                     </a>
