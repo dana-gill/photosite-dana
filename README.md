@@ -15,4 +15,16 @@ deno task dev
 ```
 
 This will watch the project directory and restart as necessary.
+
+## Cache Refresh
+
+To manually refresh the cache from Strapi:
+
+```bash
+curl -X POST http://localhost:8000/api/cache/refresh \
+  -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
+```
+
+Replace `YOUR_PHOTOSITE_TOKEN` with the value from your `.env` file.
+
 # photosite-dana
