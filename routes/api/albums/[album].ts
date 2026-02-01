@@ -4,8 +4,8 @@ import { getImagesByAlbum } from "../../../services/cache-manager.ts";
 const PHOTOSITE_TOKEN = Deno.env.get("PHOTOSITE_TOKEN") ?? "";
 
 export const handler: Handlers = {
-  GET: async (req, ctx) => {
-    const authHeader = req.headers.get("Authorization");
+  GET: async (ctx) => {
+    const authHeader = ctx.req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "");
 
     if (token !== PHOTOSITE_TOKEN || !PHOTOSITE_TOKEN) {

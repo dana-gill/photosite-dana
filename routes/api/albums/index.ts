@@ -9,8 +9,8 @@ interface AlbumSummary {
 }
 
 export const handler: Handlers = {
-  GET: async (req, _ctx) => {
-    const authHeader = req.headers.get("Authorization");
+  GET: async (ctx) => {
+    const authHeader = ctx.req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "");
 
     if (token !== PHOTOSITE_TOKEN || !PHOTOSITE_TOKEN) {
