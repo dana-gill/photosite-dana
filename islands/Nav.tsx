@@ -14,8 +14,7 @@ const workLinks: ReadonlyArray<NavLink> = [
 export default function Nav() {
   const [isWorkOpen, setIsWorkOpen] = useState(false);
 
-  const handleWorkClick = (e: MouseEvent) => {
-    e.preventDefault();
+  const handleWorkClick = () => {
     setIsWorkOpen(!isWorkOpen);
   };
 
@@ -27,18 +26,21 @@ export default function Nav() {
             <li key={link.href}>
               <a
                 href={link.href}
-                class="text-gray-900 font-[500] hover:underline transition-colors"
+                class="group text-gray-900 font-[500] transition duration-300"
               >
                 {link.label}
+                <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900"></span>
               </a>
             </li>
           ))}
           <li class="relative">
             <button
+              type="button"
               onClick={handleWorkClick}
-              class="text-gray-900 font-[500] hover:underline transition-colors cursor-pointer bg-transparent border-none"
+              class="group text-gray-900 font-[500] transition duration-300 cursor-pointer bg-transparent border-none p-0"
             >
               Work
+              <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900"></span>
             </button>
             {isWorkOpen && (
               <ul class="absolute top-full right-0 mt-2 flex flex-col gap-2">
@@ -47,9 +49,10 @@ export default function Nav() {
                     <a
                       href={link.href}
                       onClick={() => setIsWorkOpen(false)}
-                      class="text-gray-900 font-[200] italic hover:underline transition-colors whitespace-nowrap"
+                      class="group text-gray-900 font-[200] italic transition duration-300 whitespace-nowrap"
                     >
                       {link.label}
+                      <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900"></span>
                     </a>
                   </li>
                 ))}
