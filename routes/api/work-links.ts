@@ -1,7 +1,21 @@
 const capitalizeWords = (str: string): string => {
-  return str
-    .split("-")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  const lowercaseWords = new Set([
+    "a", "an", "and", "as", "at", "but", "by", "for", "from",
+    "in", "into", "of", "on", "or", "the", "to", "with"
+  ]);
+
+  const words = str.split("-");
+
+  return words
+    .map((word, index) => {
+      const lowerWord = word.toLowerCase();
+      const isFirstWord = index === 0;
+      const shouldCapitalize = isFirstWord || !lowercaseWords.has(lowerWord);
+
+      return shouldCapitalize
+        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        : lowerWord;
+    })
     .join(" ");
 };
 
