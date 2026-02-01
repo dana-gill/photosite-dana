@@ -5,7 +5,8 @@
     "dev": "deno run -A --unstable-kv --env --node-modules-dir=manual vite",
     "build": "vite build",
     "start": "deno serve -A --unstable-kv --env _fresh/server.js",
-    "update": "deno run -A -r jsr:@fresh/update ."
+    "update": "deno run -A -r jsr:@fresh/update .",
+    "deploy": "deployctl deploy --unstable-kv"
   },
   "lint": {
     "rules": {
