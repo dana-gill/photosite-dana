@@ -52,6 +52,21 @@ export const getCacheMetadata = async (): Promise<CacheMetadata | null> => {
   return result.value;
 };
 
+export const getAllImages = async (): Promise<ReadonlyArray<StrapiImage>> => {
+  const kvInstance = await getKv();
+  const entries = kvInstance.list<ReadonlyArray<StrapiImage>>({ prefix: ["albums"] });
+  const allImages: StrapiImage[] = [];
+
+  for await (const entry of entries) {
+    const images = entry.value;
+    if (images) {
+      allImages.push(...images);
+    }
+  }
+
+  return allImages;
+};
+
 export const getImagesByAlbum = async (albumName: string): Promise<ReadonlyArray<StrapiImage> | null> => {
   const kvInstance = await getKv();
   const result = await kvInstance.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
