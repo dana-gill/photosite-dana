@@ -1,6 +1,18 @@
 import { useEffect, useState } from "preact/hooks";
 import type { NavLink } from "../types/nav.ts";
 
+interface WorkPreview {
+  href: string;
+  imageUrl: string;
+  width: number;
+  height: number;
+}
+
+interface MousePosition {
+  x: number;
+  y: number;
+}
+
 const navLinks: ReadonlyArray<NavLink> = [
   { href: "/about", label: "About" },
 ];
@@ -10,14 +22,21 @@ export default function Nav() {
   const [isClosing, setIsClosing] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [workLinks, setWorkLinks] = useState<ReadonlyArray<NavLink>>([]);
+  const [workPreviews, setWorkPreviews] = useState<ReadonlyArray<WorkPreview>>([]);
+  const [hoveredHref, setHoveredHref] = useState<string | null>(null);
+  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
 
   useEffect(() => {
-    const fetchWorkLinks = async () => {
-      const response = await fetch("/api/work-links");
-      const links = await response.json();
+    const fetchWorkData = async () => {
+      const linksResponse = await fetch("/api/work-links");
+      const links = await linksResponse.json();
       setWorkLinks(links);
+
+      const previewsResponse = await fetch("/api/work-previews");
+      const previews = await previewsResponse.json();
+      setWorkPreviews(previews);
     };
-    fetchWorkLinks();
+    fetchWorkData();
   }, []);
 
   const handleModalClose = () => {
@@ -40,6 +59,24 @@ export default function Nav() {
       }, 10);
     }
   };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    setMousePosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleWorkLinkMouseEnter = (href: string) => {
+    setHoveredHref(href);
+  };
+
+  const handleWorkLinkMouseLeave = () => {
+    setHoveredHref(null);
+  };
+
+  const getPreviewForHref = (href: string): WorkPreview | null => {
+    return workPreviews.find((preview) => preview.href === href) ?? null;
+  };
+
+  const currentPreview = hoveredHref ? getPreviewForHref(hoveredHref) : null;
 
   return (
     <>
@@ -84,6 +121,7 @@ export default function Nav() {
           class={`fixed inset-0 bg-gray-50 z-[100] flex items-center justify-center transition-opacity duration-300 ${
             isClosing || isOpening ? "opacity-0" : "opacity-100"
           }`}
+          onMouseMove={handleMouseMove}
         >
           <button
             type="button"
@@ -104,6 +142,8 @@ export default function Nav() {
                 <a
                   href={link.href}
                   class="group text-gray-900 font-[200] italic transition duration-300 text-3xl"
+                  onMouseEnter={() => handleWorkLinkMouseEnter(link.href)}
+                  onMouseLeave={handleWorkLinkMouseLeave}
                 >
                   {link.label}
                   <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900">
@@ -112,6 +152,28 @@ export default function Nav() {
               </li>
             ))}
           </ul>
+          {currentPreview && (
+            <div
+              class="fixed pointer-events-none z-[101] transition-opacity duration-200"
+              style={{
+                left: `${mousePosition.x + 20}px`,
+                top: `${mousePosition.y + 20}px`,
+                maxWidth: "300px",
+              }}
+            >
+              <img
+                src={currentPreview.imageUrl}
+                alt="Work preview"
+                style={{
+                  width: "auto",
+                  height: "auto",
+                  maxWidth: "300px",
+                  maxHeight: "300px",
+                  objectFit: "contain",
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
     </>
