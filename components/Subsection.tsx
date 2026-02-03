@@ -2,7 +2,7 @@ import type { SubsectionProps } from "../types/subsection.ts";
 
 export const Subsection = ({ children }: SubsectionProps) => {
   return (
-    <p class="text-lg font-[200] mt-4 mb-15 text-center">
+    <p class="text-lg font-[200] text-center">
       {children}
     </p>
   );

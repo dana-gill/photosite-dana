@@ -1,8 +1,7 @@
 import type { StrapiImage } from "../../types/strapi.ts";
 import { Head } from "fresh/runtime";
 import { Image } from "../../components/Image.tsx";
-import { SectionTitle } from "../../components/SectionTitle.tsx";
-import { Subsection } from "../../components/Subsection.tsx";
+import { PageHeader } from "../../components/PageHeader.tsx";
 import { define } from "../../utils.ts";
 import { getImagesByAlbum } from "../../services/cache-manager.ts";
 
@@ -22,8 +21,7 @@ export default define.page<typeof handler>(function MeriInPberg({ data }) {
         <title>Meri 2025 Photos</title>
       </Head>
       <div class="max-w-7xl mx-auto">
-        <SectionTitle>Meri in Pberg</SectionTitle>
-        <Subsection>October 2025</Subsection>
+        <PageHeader title="Meri in Pberg" subtitle="October 2025" />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {images.map((image: StrapiImage) => (
             <div key={image.id} class="overflow-hidden max-w-lg fade-in-images">

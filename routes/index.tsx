@@ -1,5 +1,4 @@
 import Carousel from "../islands/Carousel.tsx";
-import { LandingPageTitle } from "../components/LandingPageTitle.tsx";
 
 export default function Home() {
   return (

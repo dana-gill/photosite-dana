@@ -1,10 +1,9 @@
 import type { StrapiImage } from "../../types/strapi.ts";
 import { Head } from "fresh/runtime";
 import { Image } from "../../components/Image.tsx";
-import { SectionTitle } from "../../components/SectionTitle.tsx";
+import { PageHeader } from "../../components/PageHeader.tsx";
 import { define } from "../../utils.ts";
 import { getImagesByAlbum } from "../../services/cache-manager.ts";
-import { Subsection } from "../../components/Subsection.tsx";
 
 export const handler = define.handlers({
   GET: async (_ctx) => {
@@ -22,8 +21,10 @@ export default define.page<typeof handler>(function Sunchasers({ data }) {
         <title>Sunchasing - Dana Gill Photography</title>
       </Head>
       <div class="max-w-7xl mx-auto">
-        <SectionTitle>Sunchasing</SectionTitle>
-        <Subsection>Chasing fleeting moments at dusk. 2021 - Current.</Subsection>
+        <PageHeader
+          title="Sunchasing"
+          subtitle="Chasing fleeting moments at dusk. 2021 - Current."
+        />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {images.map((image: StrapiImage) => (
             <div key={image.id} class="overflow-hidden max-w-lg fade-in-images">
