@@ -23,6 +23,10 @@ const workLinks: ReadonlyArray<NavLink> = [
   {
     "href": "/work/reich--van-der-rohe-pavilion",
     "label": "Reich-Van der Rohe Pavilion"
+  },
+  {
+    "href": "/work/ornate",
+    "label": "Ornate"
   }
 ];
 
