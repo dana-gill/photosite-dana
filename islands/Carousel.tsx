@@ -29,10 +29,6 @@ export default function Carousel() {
     return () => clearInterval(interval);
   }, [images]);
 
-  const handleDotClick = (index: number) => {
-    setCurrentIndex(index);
-  };
-
   const handleNext = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
   };
@@ -101,23 +97,6 @@ export default function Carousel() {
       >
         →
       </button>
-
-      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {images.map((image, index) => {
-          const isActive = index === currentIndex;
-          return (
-            <button
-              type="button"
-              key={image.id}
-              onClick={() => handleDotClick(index)}
-              class={`w-2 h-2 rounded-full transition-all cursor-pointer border-none ${
-                isActive ? "bg-white w-8" : "bg-white/50"
-              }`}
-              aria-label={`Go to image ${index + 1}`}
-            />
-          );
-        })}
-      </div>
     </div>
   );
 }

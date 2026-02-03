@@ -7,9 +7,9 @@ export default function Home() {
       <div class="px-4 py-8 mx-auto flex items-center justify-center">
         <LandingPageTitle>Dana Gill Photography</LandingPageTitle>
       </div>
-      {/* <div class="px-4 py-8">
+      <div class="px-4 py-8">
         <Carousel />
-      </div> */}
+      </div>
     </div>
   );
 }
