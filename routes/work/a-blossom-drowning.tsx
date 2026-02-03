@@ -7,22 +7,22 @@ import { getImagesByAlbum } from "../../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const images = await getImagesByAlbum(ctx.state.kv, "a-blossom-downing") ?? [];
+    const images = await getImagesByAlbum(ctx.state.kv, "a-blossom-drowning") ?? [];
     return { data: images };
   },
 });
 
 export default define.page<typeof handler>(
-  function ABlossomDowning({ data }) {
+  function ABlossomDrowning({ data }) {
     const images = data;
 
     return (
       <div class="px-4 py-8 mx-auto min-h-screen bg-gray-50">
         <Head>
-          <title>A Blossom Downing Photos</title>
+          <title>A Blossom Drowning Photos</title>
         </Head>
         <div class="max-w-7xl mx-auto">
-          <PageHeader title="A Blossom Downing" subtitle="When beauty is overwhelming" />
+          <PageHeader title="A Blossom Drowning" subtitle="" />
           <div class="flex flex-wrap justify-evenly gap-6 items-center">
             {images.map((image: StrapiImage) => (
               <div
