@@ -1,6 +1,10 @@
 /// <reference lib="deno.unstable" />
 
-import type { AlbumImages, CacheMetadata, StrapiImage} from "../types/strapi.ts";
+import type {
+  AlbumImages,
+  CacheMetadata,
+  StrapiImage,
+} from "../types/strapi.ts";
 
 export const clearCache = async (kv: Deno.Kv): Promise<void> => {
   const albumEntries = kv.list({ prefix: ["albums"] });
@@ -21,7 +25,9 @@ export const clearCache = async (kv: Deno.Kv): Promise<void> => {
   await Promise.all([deleteAlbums, deleteCache]);
 };
 
-export const getAllAlbums = async (kv: Deno.Kv): Promise<ReadonlyArray<string>> => {
+export const getAllAlbums = async (
+  kv: Deno.Kv,
+): Promise<ReadonlyArray<string>> => {
   const entries = kv.list({ prefix: ["albums"] });
   const albumNames: string[] = [];
 
@@ -35,12 +41,16 @@ export const getAllAlbums = async (kv: Deno.Kv): Promise<ReadonlyArray<string>> 
   return albumNames;
 };
 
-export const getCacheMetadata = async (kv: Deno.Kv): Promise<CacheMetadata | null> => {
+export const getCacheMetadata = async (
+  kv: Deno.Kv,
+): Promise<CacheMetadata | null> => {
   const result = await kv.get<CacheMetadata>(["cache", "metadata"]);
   return result.value;
 };
 
-export const getAllImages = async (kv: Deno.Kv): Promise<ReadonlyArray<StrapiImage>> => {
+export const getAllImages = async (
+  kv: Deno.Kv,
+): Promise<ReadonlyArray<StrapiImage>> => {
   const entries = kv.list<ReadonlyArray<StrapiImage>>({ prefix: ["albums"] });
   const allImages: StrapiImage[] = [];
 
@@ -54,20 +64,28 @@ export const getAllImages = async (kv: Deno.Kv): Promise<ReadonlyArray<StrapiIma
   return allImages;
 };
 
-export const getImagesByAlbum = async (kv: Deno.Kv, albumName: string): Promise<ReadonlyArray<StrapiImage> | null> => {
-  const result = await kv.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
+export const getImagesByAlbum = async (
+  kv: Deno.Kv,
+  albumName: string,
+): Promise<ReadonlyArray<StrapiImage> | null> => {
+  const result = await kv.get<ReadonlyArray<StrapiImage>>([
+    "albums",
+    albumName,
+  ]);
   return result.value;
 };
 
-
-export const saveAllAlbums = async (kv: Deno.Kv, albumsMap: AlbumImages): Promise<void> => {
-  const saveOperations = Array.from(albumsMap.entries()).map(([albumName, images]) =>
-    saveToCache(kv, albumName, images)
-  );
+export const saveAllAlbums = async (
+  kv: Deno.Kv,
+  albumsMap: AlbumImages,
+): Promise<void> => {
+  const saveOperations = Array.from(albumsMap.entries()).map((
+    [albumName, images],
+  ) => saveToCache(kv, albumName, images));
 
   const totalImages = Array.from(albumsMap.values()).reduce(
     (sum, images) => sum + images.length,
-    0
+    0,
   );
 
   const metadata: CacheMetadata = {
@@ -79,7 +97,10 @@ export const saveAllAlbums = async (kv: Deno.Kv, albumsMap: AlbumImages): Promis
   await Promise.all([...saveOperations, saveCacheMetadata(kv, metadata)]);
 };
 
-export const saveCacheMetadata = async (kv: Deno.Kv, metadata: CacheMetadata): Promise<void> => {
+export const saveCacheMetadata = async (
+  kv: Deno.Kv,
+  metadata: CacheMetadata,
+): Promise<void> => {
   await kv.set(["cache", "metadata"], metadata);
 };
 

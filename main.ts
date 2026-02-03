@@ -18,7 +18,10 @@ try {
   console.log("Cache initialized successfully");
 } catch (error) {
   console.error("Failed to initialize cache:", error);
-  console.error("Error details:", error instanceof Error ? error.message : String(error));
+  console.error(
+    "Error details:",
+    error instanceof Error ? error.message : String(error),
+  );
 }
 
 // Start background refresh scheduler
@@ -40,7 +43,6 @@ app.get("/api2/:name", (ctx) => {
     `Hello, ${name.charAt(0).toUpperCase() + name.slice(1)}!`,
   );
 });
-
 
 // Include file-system based routes here
 app.fsRoutes();

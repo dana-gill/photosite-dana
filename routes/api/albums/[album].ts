@@ -13,12 +13,15 @@ export const handler = async (req: Request, ctx: RouteContext) => {
   const token = authHeader?.replace("Bearer ", "");
 
   if (token !== PHOTOSITE_TOKEN || !PHOTOSITE_TOKEN) {
-    return new Response(JSON.stringify({
-      error: "Unauthorized",
-    }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 
   const albumName = ctx.params.album;

@@ -47,7 +47,9 @@ export default function Nav() {
         <div class="px-4 py-4">
           <ul class="flex gap-6 justify-between items-start">
             <li>
-              <a href="/" class="text-gray-900 font-[500] italic">Dana Gill Photography</a>
+              <a href="/" class="text-gray-900 font-[500] italic">
+                Dana Gill Photography
+              </a>
             </li>
             <div class="flex gap-6">
               {navLinks.map((link) => (
@@ -57,7 +59,8 @@ export default function Nav() {
                     class="group text-gray-900 font-[500] transition duration-300"
                   >
                     {link.label}
-                    <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900"></span>
+                    <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900">
+                    </span>
                   </a>
                 </li>
               ))}
@@ -68,7 +71,8 @@ export default function Nav() {
                   class="group text-gray-900 font-[500] transition duration-300 cursor-pointer bg-transparent border-none p-0"
                 >
                   Work
-                  <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900"></span>
+                  <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900">
+                  </span>
                 </button>
               </li>
             </div>
@@ -90,7 +94,9 @@ export default function Nav() {
           </button>
           <ul
             class={`flex flex-col gap-8 items-center transition-all duration-300 ${
-              isClosing || isOpening ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+              isClosing || isOpening
+                ? "opacity-0 translate-y-4"
+                : "opacity-100 translate-y-0"
             }`}
           >
             {workLinks.map((link) => (
@@ -100,7 +106,8 @@ export default function Nav() {
                   class="group text-gray-900 font-[200] italic transition duration-300 text-3xl"
                 >
                   {link.label}
-                  <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900"></span>
+                  <span class="block max-w-0 group-hover:max-w-full transition-all duration-300 h-px bg-gray-900">
+                  </span>
                 </a>
               </li>
             ))}

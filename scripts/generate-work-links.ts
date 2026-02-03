@@ -1,10 +1,29 @@
 const capitalizeWords = (str: string): string => {
   const lowercaseWords = new Set([
-    "a", "an", "and", "as", "at", "but", "by", "for", "from",
-    "in", "into", "of", "on", "or", "the", "to", "with", "der",
+    "a",
+    "an",
+    "and",
+    "as",
+    "at",
+    "but",
+    "by",
+    "for",
+    "from",
+    "in",
+    "into",
+    "of",
+    "on",
+    "or",
+    "the",
+    "to",
+    "with",
+    "der",
   ]);
 
-  const capitalizeSegment = (segment: string, isFirstSegment: boolean): string => {
+  const capitalizeSegment = (
+    segment: string,
+    isFirstSegment: boolean,
+  ): string => {
     const words = segment.split("-");
 
     return words

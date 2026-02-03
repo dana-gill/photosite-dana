@@ -21,7 +21,8 @@ This will watch the project directory and restart as necessary.
 
 To create a new image gallery page:
 
-1. **Upload images to Strapi** and tag them with an album name (e.g., `my-album`)
+1. **Upload images to Strapi** and tag them with an album name (e.g.,
+   `my-album`)
 
 2. **Create a new page file** in `routes/work/` named after your album:
    ```bash
@@ -57,7 +58,10 @@ To create a new image gallery page:
            <PageHeader title="My Album" subtitle="Subtitle here" />
            <div class="flex flex-wrap justify-evenly gap-6 items-center">
              {images.map((image: StrapiImage) => (
-               <div key={image.id} class="overflow-hidden max-w-lg fade-in-images">
+               <div
+                 key={image.id}
+                 class="overflow-hidden max-w-lg fade-in-images"
+               >
                  <Image
                    src={image.url}
                    alt={image.alternativeText ?? image.name}
@@ -89,7 +93,8 @@ To create a new image gallery page:
 
 5. **Access your page** at `/work/my-album`
 
-The page will automatically fetch and display all images tagged with the specified album name from Strapi via the Deno KV cache.
+The page will automatically fetch and display all images tagged with the
+specified album name from Strapi via the Deno KV cache.
 
 ### File Naming Conventions
 
@@ -101,27 +106,32 @@ The file name determines the navigation title:
 - **Double hyphens** (`--`) are preserved as single hyphens in the title
   - Example: `reich--van-der-rohe-pavilion.tsx` → "Reich-Van der Rohe Pavilion"
 
-- Words like "a", "an", "the", "in", "of", "der" are kept lowercase (unless they're the first word)
+- Words like "a", "an", "the", "in", "of", "der" are kept lowercase (unless
+  they're the first word)
 
 ## API Endpoints
 
-All endpoints require authentication with the `PHOTOSITE_TOKEN` from your `.env` file.
+All endpoints require authentication with the `PHOTOSITE_TOKEN` from your `.env`
+file.
 
 ### Get All Albums
 
 **Local:**
+
 ```bash
 curl http://localhost:8000/api/albums \
   -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
 ```
 
 **Production:**
+
 ```bash
 curl https://photosite-dana.danadeploy.deno.net/api/albums \
   -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
 ```
 
 Returns a list of all albums with image counts:
+
 ```json
 [
   {
@@ -138,12 +148,14 @@ Returns a list of all albums with image counts:
 ### Get Album Images
 
 **Local:**
+
 ```bash
 curl http://localhost:8000/api/albums/meri2025 \
   -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
 ```
 
 **Production:**
+
 ```bash
 curl https://photosite-dana.danadeploy.deno.net/api/albums/meri2025 \
   -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
@@ -156,18 +168,21 @@ Returns all images for the specified album with full Strapi metadata.
 Manually trigger a cache refresh from Strapi:
 
 **Local:**
+
 ```bash
 curl -X POST http://localhost:8000/api/cache/refresh \
   -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
 ```
 
 **Production:**
+
 ```bash
 curl -X POST https://photosite-dana.danadeploy.deno.net/api/cache/refresh \
   -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
 ```
 
 Returns refresh status and cache metadata:
+
 ```json
 {
   "success": true,

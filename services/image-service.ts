@@ -59,7 +59,9 @@ const normalizeImageUrl = (image: StrapiImage): StrapiImage => {
   };
 };
 
-export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiImage>> => {
+export const fetchAllImagesFromStrapi = async (): Promise<
+  ReadonlyArray<StrapiImage>
+> => {
   const url = `${STRAPI_URL}api/upload/files`;
 
   const response = await fetch(url, {
@@ -74,15 +76,22 @@ export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiIm
   if (!isSuccess) {
     const errorText = await response.text();
     console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to fetch images from Strapi: ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch images from Strapi: ${response.statusText}`,
+    );
   }
 
   const data = await response.json();
 
   if (!Array.isArray(data)) {
-    console.error("Invalid Strapi response structure:", JSON.stringify(data, null, 2));
+    console.error(
+      "Invalid Strapi response structure:",
+      JSON.stringify(data, null, 2),
+    );
     throw new Error(
-      `Strapi API returned unexpected structure. Expected an array but response was: ${JSON.stringify(data).substring(0, 200)}`
+      `Strapi API returned unexpected structure. Expected an array but response was: ${
+        JSON.stringify(data).substring(0, 200)
+      }`,
     );
   }
 
@@ -90,7 +99,9 @@ export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiIm
   return normalizedImages;
 };
 
-export const groupImagesByAlbum = (images: ReadonlyArray<StrapiImage>): AlbumImages => {
+export const groupImagesByAlbum = (
+  images: ReadonlyArray<StrapiImage>,
+): AlbumImages => {
   const albumsMap = new Map<string, StrapiImage[]>();
 
   images.forEach((image) => {
@@ -102,12 +113,14 @@ export const groupImagesByAlbum = (images: ReadonlyArray<StrapiImage>): AlbumIma
   return new Map(
     Array.from(albumsMap.entries()).map(([key, value]) => [
       key,
-      sortImagesByNumericSuffix(value)
-    ])
+      sortImagesByNumericSuffix(value),
+    ]),
   );
 };
 
-export const sortImagesByNumericSuffix = (images: ReadonlyArray<StrapiImage>): ReadonlyArray<StrapiImage> => {
+export const sortImagesByNumericSuffix = (
+  images: ReadonlyArray<StrapiImage>,
+): ReadonlyArray<StrapiImage> => {
   return [...images].sort((a, b) => {
     const numA = extractNumericSuffix(a.name);
     const numB = extractNumericSuffix(b.name);
