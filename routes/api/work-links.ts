@@ -5,6 +5,10 @@ import type { NavLink } from "../../types/nav.ts";
 
 const workLinks: ReadonlyArray<NavLink> = [
   {
+    "href": "/work/loyola-retreat-house",
+    "label": "Loyola Retreat House"
+  },
+  {
     "href": "/work/meri-in-pberg",
     "label": "Meri in Pberg"
   },
