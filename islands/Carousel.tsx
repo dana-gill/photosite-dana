@@ -16,18 +16,15 @@ export default function Carousel() {
     fetchImages();
   }, []);
 
-  useEffect(() => {
-    const hasImages = images.length > 0;
-    if (!hasImages) {
-      return;
-    }
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [images]);
+  const handlePrevious = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
+  };
 
   if (isLoading) {
     return (
@@ -69,6 +66,18 @@ export default function Carousel() {
           );
         })}
       </div>
+
+      <div
+        onClick={handlePrevious}
+        class="absolute left-0 top-0 w-1/2 h-full cursor-w-resize"
+        aria-label="Previous image"
+      />
+
+      <div
+        onClick={handleNext}
+        class="absolute right-0 top-0 w-1/2 h-full cursor-e-resize"
+        aria-label="Next image"
+      />
     </div>
   );
 }
