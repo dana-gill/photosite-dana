@@ -5,8 +5,8 @@ import { define } from "../utils.ts";
 import { getImagesByAlbum } from "../services/cache-manager.ts";
 
 export const handler = define.handlers({
-  GET: async (_ctx) => {
-    const images = await getImagesByAlbum("about") ?? [];
+  GET: async (ctx) => {
+    const images = await getImagesByAlbum(ctx.state.kv, "about") ?? [];
     const aboutImage = images.find((img: StrapiImage) => img.name.includes("about_1"));
     return { data: aboutImage ?? null };
   },

@@ -1,3 +1,5 @@
+/// <reference lib="deno.unstable" />
+
 import { App, staticFiles } from "fresh";
 import { define, type State } from "./utils.ts";
 import { refreshCache } from "./services/image-service.ts";
@@ -5,13 +7,18 @@ import { startCacheRefreshScheduler } from "./services/scheduler.ts";
 
 export const app = new App<State>();
 
+// Initialize KV once and store globally
+console.log("[KV] Opening single shared KV connection...");
+const kv = await Deno.openKv();
+console.log("[KV] Shared KV connection established");
+
 // Initialize cache on startup
 console.log("Initializing cache from Strapi...");
 console.log("STRAPI_URL:", Deno.env.get("STRAPI_URL"));
 console.log("STRAPI_API_TOKEN configured:", !!Deno.env.get("STRAPI_API_TOKEN"));
 
 try {
-  await refreshCache();
+  await refreshCache(kv);
   console.log("Cache initialized successfully");
 } catch (error) {
   console.error("Failed to initialize cache:", error);
@@ -19,13 +26,14 @@ try {
 }
 
 // Start background refresh scheduler
-startCacheRefreshScheduler();
+startCacheRefreshScheduler(kv);
 
 app.use(staticFiles());
 
-// Pass a shared value from a middleware
+// Inject KV into all requests via state
 app.use(async (ctx) => {
   ctx.state.shared = "hello";
+  ctx.state.kv = kv;
   return await ctx.next();
 });
 

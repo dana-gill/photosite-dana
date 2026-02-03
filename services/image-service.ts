@@ -118,10 +118,10 @@ export const sortImagesByNumericSuffix = (images: ReadonlyArray<StrapiImage>): R
   });
 };
 
-export const refreshCache = async (): Promise<void> => {
+export const refreshCache = async (kv: Deno.Kv): Promise<void> => {
   const images = await fetchAllImagesFromStrapi();
   const albumsMap = groupImagesByAlbum(images);
   console.log(`Grouped ${images.length} images into ${albumsMap.size} albums:`, Array.from(albumsMap.keys()));
-  await saveAllAlbums(albumsMap);
+  await saveAllAlbums(kv, albumsMap);
   console.log("Successfully saved all albums to cache");
 };

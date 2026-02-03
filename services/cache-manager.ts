@@ -1,41 +1,28 @@
 /// <reference lib="deno.unstable" />
 
-import type { AlbumImages, CacheMetadata, StrapiImage } from "../types/strapi.ts";
+import type { AlbumImages, CacheMetadata, StrapiImage} from "../types/strapi.ts";
 
-let kv: Deno.Kv | null = null;
-
-const getKv = async (): Promise<Deno.Kv> => {
-  if (!kv) {
-    console.log("[KV] Opening KV connection...");
-    kv = await Deno.openKv();
-    console.log("[KV] KV connection established");
-  }
-  return kv;
-};
-
-export const clearCache = async (): Promise<void> => {
-  const kvInstance = await getKv();
-  const albumEntries = kvInstance.list({ prefix: ["albums"] });
-  const cacheEntries = kvInstance.list({ prefix: ["cache"] });
+export const clearCache = async (kv: Deno.Kv): Promise<void> => {
+  const albumEntries = kv.list({ prefix: ["albums"] });
+  const cacheEntries = kv.list({ prefix: ["cache"] });
 
   const deleteAlbums = (async () => {
     for await (const entry of albumEntries) {
-      await kvInstance.delete(entry.key);
+      await kv.delete(entry.key);
     }
   })();
 
   const deleteCache = (async () => {
     for await (const entry of cacheEntries) {
-      await kvInstance.delete(entry.key);
+      await kv.delete(entry.key);
     }
   })();
 
   await Promise.all([deleteAlbums, deleteCache]);
 };
 
-export const getAllAlbums = async (): Promise<ReadonlyArray<string>> => {
-  const kvInstance = await getKv();
-  const entries = kvInstance.list({ prefix: ["albums"] });
+export const getAllAlbums = async (kv: Deno.Kv): Promise<ReadonlyArray<string>> => {
+  const entries = kv.list({ prefix: ["albums"] });
   const albumNames: string[] = [];
 
   for await (const entry of entries) {
@@ -48,15 +35,13 @@ export const getAllAlbums = async (): Promise<ReadonlyArray<string>> => {
   return albumNames;
 };
 
-export const getCacheMetadata = async (): Promise<CacheMetadata | null> => {
-  const kvInstance = await getKv();
-  const result = await kvInstance.get<CacheMetadata>(["cache", "metadata"]);
+export const getCacheMetadata = async (kv: Deno.Kv): Promise<CacheMetadata | null> => {
+  const result = await kv.get<CacheMetadata>(["cache", "metadata"]);
   return result.value;
 };
 
-export const getAllImages = async (): Promise<ReadonlyArray<StrapiImage>> => {
-  const kvInstance = await getKv();
-  const entries = kvInstance.list<ReadonlyArray<StrapiImage>>({ prefix: ["albums"] });
+export const getAllImages = async (kv: Deno.Kv): Promise<ReadonlyArray<StrapiImage>> => {
+  const entries = kv.list<ReadonlyArray<StrapiImage>>({ prefix: ["albums"] });
   const allImages: StrapiImage[] = [];
 
   for await (const entry of entries) {
@@ -69,12 +54,10 @@ export const getAllImages = async (): Promise<ReadonlyArray<StrapiImage>> => {
   return allImages;
 };
 
-export const getImagesByAlbum = async (albumName: string): Promise<ReadonlyArray<StrapiImage> | null> => {
-  const kvInstance = await getKv();
-
+export const getImagesByAlbum = async (kv: Deno.Kv, albumName: string): Promise<ReadonlyArray<StrapiImage> | null> => {
   // List all albums to debug
   const allAlbums: string[] = [];
-  const entries = kvInstance.list({ prefix: ["albums"] });
+  const entries = kv.list({ prefix: ["albums"] });
   for await (const entry of entries) {
     const key = entry.key[1];
     if (typeof key === "string") {
@@ -83,19 +66,15 @@ export const getImagesByAlbum = async (albumName: string): Promise<ReadonlyArray
   }
   console.log(`[KV] All albums in KV: [${allAlbums.join(", ")}]`);
 
-  const result = await kvInstance.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
+  const result = await kv.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
   console.log(`[KV] Getting album "${albumName}": found=${result.value !== null}, count=${result.value?.length ?? 0}`);
   return result.value;
 };
 
-export const initializeCache = async (): Promise<void> => {
-  // KV is already initialized at module level
-  // This function exists for explicit initialization if needed in the future
-};
 
-export const saveAllAlbums = async (albumsMap: AlbumImages): Promise<void> => {
+export const saveAllAlbums = async (kv: Deno.Kv, albumsMap: AlbumImages): Promise<void> => {
   const saveOperations = Array.from(albumsMap.entries()).map(([albumName, images]) =>
-    saveToCache(albumName, images)
+    saveToCache(kv, albumName, images)
   );
 
   const totalImages = Array.from(albumsMap.values()).reduce(
@@ -109,23 +88,22 @@ export const saveAllAlbums = async (albumsMap: AlbumImages): Promise<void> => {
     albumCount: albumsMap.size,
   };
 
-  await Promise.all([...saveOperations, saveCacheMetadata(metadata)]);
+  await Promise.all([...saveOperations, saveCacheMetadata(kv, metadata)]);
 };
 
-export const saveCacheMetadata = async (metadata: CacheMetadata): Promise<void> => {
-  const kvInstance = await getKv();
-  await kvInstance.set(["cache", "metadata"], metadata);
+export const saveCacheMetadata = async (kv: Deno.Kv, metadata: CacheMetadata): Promise<void> => {
+  await kv.set(["cache", "metadata"], metadata);
 };
 
 export const saveToCache = async (
+  kv: Deno.Kv,
   albumName: string,
-  images: ReadonlyArray<StrapiImage>
+  images: ReadonlyArray<StrapiImage>,
 ): Promise<void> => {
-  const kvInstance = await getKv();
-  await kvInstance.set(["albums", albumName], images);
+  await kv.set(["albums", albumName], images);
   console.log(`[KV] Saved album "${albumName}" with ${images.length} images`);
 
   // Verify immediately after saving
-  const verification = await kvInstance.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
+  const verification = await kv.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
   console.log(`[KV] Verification for "${albumName}": found=${verification.value !== null}, count=${verification.value?.length ?? 0}`);
 };
