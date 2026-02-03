@@ -8,7 +8,6 @@ import { getImagesByAlbum } from "../../services/cache-manager.ts";
 export const handler = define.handlers({
   GET: async (ctx) => {
     const images = await getImagesByAlbum(ctx.state.kv, "reich-vdr") ?? [];
-    console.log(`[reich-vdr] Retrieved ${images.length} images from cache`);
     return { data: images };
   },
 });

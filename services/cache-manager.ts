@@ -55,19 +55,7 @@ export const getAllImages = async (kv: Deno.Kv): Promise<ReadonlyArray<StrapiIma
 };
 
 export const getImagesByAlbum = async (kv: Deno.Kv, albumName: string): Promise<ReadonlyArray<StrapiImage> | null> => {
-  // List all albums to debug
-  const allAlbums: string[] = [];
-  const entries = kv.list({ prefix: ["albums"] });
-  for await (const entry of entries) {
-    const key = entry.key[1];
-    if (typeof key === "string") {
-      allAlbums.push(key);
-    }
-  }
-  console.log(`[KV] All albums in KV: [${allAlbums.join(", ")}]`);
-
   const result = await kv.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
-  console.log(`[KV] Getting album "${albumName}": found=${result.value !== null}, count=${result.value?.length ?? 0}`);
   return result.value;
 };
 
@@ -101,9 +89,4 @@ export const saveToCache = async (
   images: ReadonlyArray<StrapiImage>,
 ): Promise<void> => {
   await kv.set(["albums", albumName], images);
-  console.log(`[KV] Saved album "${albumName}" with ${images.length} images`);
-
-  // Verify immediately after saving
-  const verification = await kv.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
-  console.log(`[KV] Verification for "${albumName}": found=${verification.value !== null}, count=${verification.value?.length ?? 0}`);
 };

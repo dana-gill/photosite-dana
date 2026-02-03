@@ -61,7 +61,6 @@ const normalizeImageUrl = (image: StrapiImage): StrapiImage => {
 
 export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiImage>> => {
   const url = `${STRAPI_URL}api/upload/files`;
-  console.log(`Fetching images from Strapi: ${url}`);
 
   const response = await fetch(url, {
     headers: {
@@ -88,8 +87,6 @@ export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiIm
   }
 
   const normalizedImages = data.map(normalizeImageUrl);
-  console.log(`Successfully fetched ${normalizedImages.length} images from Strapi`);
-  console.log(`Sample image URL: ${normalizedImages[0]?.url}`);
   return normalizedImages;
 };
 
@@ -121,7 +118,5 @@ export const sortImagesByNumericSuffix = (images: ReadonlyArray<StrapiImage>): R
 export const refreshCache = async (kv: Deno.Kv): Promise<void> => {
   const images = await fetchAllImagesFromStrapi();
   const albumsMap = groupImagesByAlbum(images);
-  console.log(`Grouped ${images.length} images into ${albumsMap.size} albums:`, Array.from(albumsMap.keys()));
   await saveAllAlbums(kv, albumsMap);
-  console.log("Successfully saved all albums to cache");
 };

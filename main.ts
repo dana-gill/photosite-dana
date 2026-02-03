@@ -8,14 +8,10 @@ import { startCacheRefreshScheduler } from "./services/scheduler.ts";
 export const app = new App<State>();
 
 // Initialize KV once and store globally
-console.log("[KV] Opening single shared KV connection...");
 const kv = await Deno.openKv();
-console.log("[KV] Shared KV connection established");
 
 // Initialize cache on startup
 console.log("Initializing cache from Strapi...");
-console.log("STRAPI_URL:", Deno.env.get("STRAPI_URL"));
-console.log("STRAPI_API_TOKEN configured:", !!Deno.env.get("STRAPI_API_TOKEN"));
 
 try {
   await refreshCache(kv);
@@ -45,12 +41,6 @@ app.get("/api2/:name", (ctx) => {
   );
 });
 
-// this can also be defined via a file. feel free to delete this!
-const exampleLoggerMiddleware = define.middleware((ctx) => {
-  console.log(`${ctx.req.method} ${ctx.req.url}`);
-  return ctx.next();
-});
-app.use(exampleLoggerMiddleware);
 
 // Include file-system based routes here
 app.fsRoutes();
