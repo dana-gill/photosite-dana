@@ -19,6 +19,7 @@ export const extractNumericSuffix = (filename: string): number => {
 
 export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiImage>> => {
   const url = `${STRAPI_URL}api/upload/files`;
+  console.log(`Fetching images from Strapi: ${url}`);
 
   const response = await fetch(url, {
     headers: {
@@ -44,6 +45,7 @@ export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiIm
     );
   }
 
+  console.log(`Successfully fetched ${data.length} images from Strapi`);
   return data;
 };
 
@@ -75,5 +77,7 @@ export const sortImagesByNumericSuffix = (images: ReadonlyArray<StrapiImage>): R
 export const refreshCache = async (): Promise<void> => {
   const images = await fetchAllImagesFromStrapi();
   const albumsMap = groupImagesByAlbum(images);
+  console.log(`Grouped ${images.length} images into ${albumsMap.size} albums:`, Array.from(albumsMap.keys()));
   await saveAllAlbums(albumsMap);
+  console.log("Successfully saved all albums to cache");
 };

@@ -8,6 +8,7 @@ import { getImagesByAlbum } from "../../services/cache-manager.ts";
 export const handler = define.handlers({
   GET: async (_ctx) => {
     const images = await getImagesByAlbum("sunchasers") ?? [];
+    console.log(`[sunchasing] Retrieved ${images.length} images from cache`);
     return { data: images };
   },
 });

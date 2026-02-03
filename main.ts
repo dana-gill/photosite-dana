@@ -7,8 +7,16 @@ export const app = new App<State>();
 
 // Initialize cache on startup
 console.log("Initializing cache from Strapi...");
-await refreshCache();
-console.log("Cache initialized successfully");
+console.log("STRAPI_URL:", Deno.env.get("STRAPI_URL"));
+console.log("STRAPI_API_TOKEN configured:", !!Deno.env.get("STRAPI_API_TOKEN"));
+
+try {
+  await refreshCache();
+  console.log("Cache initialized successfully");
+} catch (error) {
+  console.error("Failed to initialize cache:", error);
+  console.error("Error details:", error instanceof Error ? error.message : String(error));
+}
 
 // Start background refresh scheduler
 startCacheRefreshScheduler();
