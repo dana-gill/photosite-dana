@@ -4,19 +4,27 @@ const capitalizeWords = (str: string): string => {
     "in", "into", "of", "on", "or", "the", "to", "with", "der",
   ]);
 
-  const words = str.split("-");
+  const capitalizeSegment = (segment: string, isFirstSegment: boolean): string => {
+    const words = segment.split("-");
 
-  return words
-    .map((word, index) => {
-      const lowerWord = word.toLowerCase();
-      const isFirstWord = index === 0;
-      const shouldCapitalize = isFirstWord || !lowercaseWords.has(lowerWord);
+    return words
+      .map((word, index) => {
+        const lowerWord = word.toLowerCase();
+        const isFirstWord = isFirstSegment && index === 0;
+        const shouldCapitalize = isFirstWord || !lowercaseWords.has(lowerWord);
 
-      return shouldCapitalize
-        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        : lowerWord;
-    })
-    .join(" ");
+        return shouldCapitalize
+          ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          : lowerWord;
+      })
+      .join(" ");
+  };
+
+  const segments = str.split("--");
+
+  return segments
+    .map((segment, index) => capitalizeSegment(segment, index === 0))
+    .join("-");
 };
 
 const generateWorkLinks = async () => {

@@ -5,16 +5,16 @@ import type { NavLink } from "../../types/nav.ts";
 
 const workLinks: ReadonlyArray<NavLink> = [
   {
-    "href": "/work/reich-van-der-rohe-pavilion",
-    "label": "Reich van Der Rohe Pavilion"
-  },
-  {
     "href": "/work/meri-in-pberg",
     "label": "Meri in Pberg"
   },
   {
     "href": "/work/sunchasing",
     "label": "Sunchasing"
+  },
+  {
+    "href": "/work/reich--van-der-rohe-pavilion",
+    "label": "Reich-Van der Rohe Pavilion"
   }
 ];
 
