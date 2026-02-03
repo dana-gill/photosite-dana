@@ -3,7 +3,7 @@ import type { PageHeaderProps } from "../types/page-header.ts";
 export const PageHeader = ({ subtitle, title }: PageHeaderProps) => {
   return (
     <>
-      <div class="my-8">
+      <div class="mt-16 md:mt-8 mb-8">
         <h1 class="text-4xl font-[200] italic mt-8 mb-2 text-center fade-in-title">
           {title}
         </h1>
