@@ -8,6 +8,7 @@ const navLinks: ReadonlyArray<NavLink> = [
 export default function Nav() {
   const [isWorkOpen, setIsWorkOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   const [workLinks, setWorkLinks] = useState<ReadonlyArray<NavLink>>([]);
 
   useEffect(() => {
@@ -33,6 +34,10 @@ export default function Nav() {
     } else {
       setIsWorkOpen(true);
       setIsClosing(false);
+      setIsOpening(true);
+      setTimeout(() => {
+        setIsOpening(false);
+      }, 10);
     }
   };
 
@@ -73,7 +78,7 @@ export default function Nav() {
       {(isWorkOpen || isClosing) && (
         <div
           class={`fixed inset-0 bg-gray-50 z-[100] flex items-center justify-center transition-opacity duration-300 ${
-            isClosing ? "opacity-0" : "opacity-100"
+            isClosing || isOpening ? "opacity-0" : "opacity-100"
           }`}
         >
           <button
@@ -85,7 +90,7 @@ export default function Nav() {
           </button>
           <ul
             class={`flex flex-col gap-8 items-center transition-all duration-300 ${
-              isClosing ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+              isClosing || isOpening ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
             }`}
           >
             {workLinks.map((link) => (
