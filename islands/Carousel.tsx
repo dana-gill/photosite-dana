@@ -29,16 +29,6 @@ export default function Carousel() {
     return () => clearInterval(interval);
   }, [images]);
 
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-  };
-
-  const handlePrevious = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
-    );
-  };
-
   if (isLoading) {
     return (
       <div class="w-full h-[70vh] flex items-center justify-center">
@@ -57,7 +47,7 @@ export default function Carousel() {
   }
 
   return (
-    <div class="relative w-full h-[70vh] overflow-hidden group">
+    <div class="relative w-full h-[70vh] overflow-hidden">
       <div class="relative w-full h-full">
         {images.map((image, index) => {
           const url = image.formats?.large?.url ?? image.url;
@@ -79,24 +69,6 @@ export default function Carousel() {
           );
         })}
       </div>
-
-      <button
-        type="button"
-        onClick={handlePrevious}
-        class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-none hover:bg-black/70"
-        aria-label="Previous image"
-      >
-        ←
-      </button>
-
-      <button
-        type="button"
-        onClick={handleNext}
-        class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-none hover:bg-black/70"
-        aria-label="Next image"
-      >
-        →
-      </button>
     </div>
   );
 }
