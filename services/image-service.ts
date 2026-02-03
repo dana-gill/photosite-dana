@@ -17,6 +17,16 @@ export const extractNumericSuffix = (filename: string): number => {
   return isNaN(numericValue) ? 0 : numericValue;
 };
 
+const normalizeImageUrl = (image: StrapiImage): StrapiImage => {
+  const isRelativeUrl = image.url.startsWith("/");
+  const normalizedUrl = isRelativeUrl ? `${STRAPI_URL}${image.url}` : image.url;
+
+  return {
+    ...image,
+    url: normalizedUrl,
+  };
+};
+
 export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiImage>> => {
   const url = `${STRAPI_URL}api/upload/files`;
   console.log(`Fetching images from Strapi: ${url}`);
@@ -45,8 +55,10 @@ export const fetchAllImagesFromStrapi = async (): Promise<ReadonlyArray<StrapiIm
     );
   }
 
-  console.log(`Successfully fetched ${data.length} images from Strapi`);
-  return data;
+  const normalizedImages = data.map(normalizeImageUrl);
+  console.log(`Successfully fetched ${normalizedImages.length} images from Strapi`);
+  console.log(`Sample image URL: ${normalizedImages[0]?.url}`);
+  return normalizedImages;
 };
 
 export const groupImagesByAlbum = (images: ReadonlyArray<StrapiImage>): AlbumImages => {
