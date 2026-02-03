@@ -22,7 +22,7 @@ export default define.page<typeof handler>(
           <title>A Blossom Drowning Photos</title>
         </Head>
         <div class="max-w-7xl mx-auto">
-          <PageHeader title="A Blossom Drowning" subtitle="" />
+          <PageHeader title="A Blossom Drowning" subtitle="When something beautiful is overwhelming" />
           <div class="flex flex-wrap justify-evenly gap-6 items-center">
             {images.map((image: StrapiImage) => (
               <div
