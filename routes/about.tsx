@@ -7,7 +7,7 @@ import { getImagesByAlbum } from "../services/cache-manager.ts";
 export const handler = define.handlers({
   GET: async (_ctx) => {
     const images = await getImagesByAlbum("about") ?? [];
-    const aboutImage = images.find((img: StrapiImage) => img.name.includes("about_2"));
+    const aboutImage = images.find((img: StrapiImage) => img.name.includes("about_1"));
     return { data: aboutImage ?? null };
   },
 });
@@ -23,7 +23,7 @@ export default define.page<typeof handler>(function About({ data }) {
       <div class="max-w-4xl mx-auto pt-20 flex flex-col md:flex-row gap-8">
         {aboutImage && (
           <div class="flex justify-flex-start fade-in-title">
-            <div class="max-w-[2000px]">
+            <div class="max-w-[2000px] max-h-[1000px]">
               <Image
                 src={aboutImage.url}
                 alt={aboutImage.alternativeText ?? aboutImage.name}
