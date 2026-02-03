@@ -1,7 +1,7 @@
 const capitalizeWords = (str: string): string => {
   const lowercaseWords = new Set([
     "a", "an", "and", "as", "at", "but", "by", "for", "from",
-    "in", "into", "of", "on", "or", "the", "to", "with",
+    "in", "into", "of", "on", "or", "the", "to", "with", "van",
   ]);
 
   const words = str.split("-");
