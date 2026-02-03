@@ -37,7 +37,7 @@ export default define.page<typeof handler>(function About({ data }) {
         )}
         <div class="prose prose-lg mx-auto fade-in-images">
           <p class="text-gray-700 leading-relaxed">
-            Dana Gill is a Filipino engineer and artist based in Berlin. She
+            Dana Gill is a Filipino engineer and hobby-artist based in Berlin. She
             shoots primarily with analog on a Minolta and Canon Pixma, but also enjoys shooting
             digitally. She enjoys capturing portraits and various moments from
             travels and life.
