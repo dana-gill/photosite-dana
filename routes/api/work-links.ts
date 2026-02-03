@@ -9,6 +9,10 @@ const workLinks: ReadonlyArray<NavLink> = [
     "label": "Loyola Retreat House"
   },
   {
+    "href": "/work/coron",
+    "label": "Coron"
+  },
+  {
     "href": "/work/meri-in-pberg",
     "label": "Meri in Pberg"
   },
