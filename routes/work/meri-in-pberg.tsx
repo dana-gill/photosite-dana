@@ -21,7 +21,7 @@ export default define.page<typeof handler>(function MeriInPberg({ data }) {
         <title>Meri 2025 Photos</title>
       </Head>
       <div class="max-w-7xl mx-auto">
-        <PageHeader title="Meri in Pberg" subtitle="October 2025" />
+        <PageHeader title="Meri in Pberg" subtitle="October 2025." />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {images.map((image: StrapiImage) => (
             <div key={image.id} class="overflow-hidden max-w-lg fade-in-images">

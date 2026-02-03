@@ -22,7 +22,7 @@ export default define.page<typeof handler>(
           <title>Loyola Retreat House Photos</title>
         </Head>
         <div class="max-w-7xl mx-auto">
-          <PageHeader title="Loyola Retreat House" subtitle="December 2026" />
+          <PageHeader title="Loyola Retreat House" subtitle="Jesus calling. December 2026" />
           <div class="flex flex-wrap justify-evenly gap-6 items-center">
             {images.map((image: StrapiImage) => (
               <div

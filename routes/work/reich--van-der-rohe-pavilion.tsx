@@ -23,7 +23,7 @@ export default define.page<typeof handler>(function ReichVdr({ data }) {
       <div class="max-w-7xl mx-auto">
         <PageHeader
           title="Reich-Van der Rohe Pavilion"
-          subtitle="October 2025"
+          subtitle="October 2025."
         />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {images.map((image: StrapiImage) => (
