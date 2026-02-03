@@ -42,7 +42,7 @@ export default function Nav() {
         <div class="px-4 py-4">
           <ul class="flex gap-6 justify-between items-start">
             <li>
-              <span class="text-gray-900 font-[500] italic">Dana Gill</span>
+              <span class="text-gray-900 font-[500] italic">Dana Gill Photography</span>
             </li>
             <div class="flex gap-6">
               {navLinks.map((link) => (
