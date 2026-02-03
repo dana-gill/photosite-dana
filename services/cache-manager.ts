@@ -6,7 +6,9 @@ let kv: Deno.Kv | null = null;
 
 const getKv = async (): Promise<Deno.Kv> => {
   if (!kv) {
+    console.log("[KV] Opening KV connection...");
     kv = await Deno.openKv();
+    console.log("[KV] KV connection established");
   }
   return kv;
 };
@@ -69,6 +71,18 @@ export const getAllImages = async (): Promise<ReadonlyArray<StrapiImage>> => {
 
 export const getImagesByAlbum = async (albumName: string): Promise<ReadonlyArray<StrapiImage> | null> => {
   const kvInstance = await getKv();
+
+  // List all albums to debug
+  const allAlbums: string[] = [];
+  const entries = kvInstance.list({ prefix: ["albums"] });
+  for await (const entry of entries) {
+    const key = entry.key[1];
+    if (typeof key === "string") {
+      allAlbums.push(key);
+    }
+  }
+  console.log(`[KV] All albums in KV: [${allAlbums.join(", ")}]`);
+
   const result = await kvInstance.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
   console.log(`[KV] Getting album "${albumName}": found=${result.value !== null}, count=${result.value?.length ?? 0}`);
   return result.value;
