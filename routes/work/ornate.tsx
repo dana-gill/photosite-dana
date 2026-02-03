@@ -22,7 +22,7 @@ export default define.page<typeof handler>(
           <title>Ornate Photos</title>
         </Head>
         <div class="max-w-7xl mx-auto">
-          <PageHeader title="Ornate" subtitle="Grand architecture through Italy and the South of France" />
+          <PageHeader title="Ornate" subtitle="Detailed architecture through Italy and the South of France" />
           <div class="flex flex-wrap justify-evenly gap-6 items-center">
             {images.map((image: StrapiImage) => (
               <div
