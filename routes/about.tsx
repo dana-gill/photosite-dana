@@ -25,7 +25,7 @@ export default define.page<typeof handler>(function About({ data }) {
       <div class="max-w-4xl mx-auto pt-20 flex flex-col md:flex-row gap-8">
         {aboutImage && (
           <div class="flex justify-flex-start fade-in-title">
-            <div class="max-w-[2000px] max-h-[1000px]">
+            <div class="max-w-[2000px] max-h-[2000px]">
               <Image
                 src={aboutImage.url}
                 alt={aboutImage.alternativeText ?? aboutImage.name}
@@ -37,10 +37,13 @@ export default define.page<typeof handler>(function About({ data }) {
         )}
         <div class="prose prose-lg mx-auto fade-in-images">
           <p class="text-gray-700 leading-relaxed">
-            Dana Gill is a Filipino artist and engineer based in Berlin. She
-            shoots primarily with analog on a Minolta, but also enjoys shooting
+            Dana Gill is a Filipino engineer and artist based in Berlin. She
+            shoots primarily with analog on a Minolta and Canon Pixma, but also enjoys shooting
             digitally. She enjoys capturing portraits and various moments from
             travels and life.
+          </p>
+          <p class="text-gray-700 mt-4 leading-relaxed">
+            All photos on this site were shot on analog film unless stated otherwise.
           </p>
           <p class="text-gray-700 mt-4 leading-relaxed">
             For inquiries, please reach out via email at danougill [@]
