@@ -6,15 +6,11 @@ export const handler = define.handlers({
   GET: async (ctx) => {
     const allImages = await getAllImages(ctx.state.kv);
 
-    const sortedImages = [...allImages].sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return dateB - dateA;
-    });
+    const shuffledImages = [...allImages].sort(() => Math.random() - 0.5);
 
-    const recentImages: ReadonlyArray<StrapiImage> = sortedImages.slice(0, 10);
+    const randomImages: ReadonlyArray<StrapiImage> = shuffledImages.slice(0, 10);
 
-    return new Response(JSON.stringify(recentImages), {
+    return new Response(JSON.stringify(randomImages), {
       headers: { "Content-Type": "application/json" },
     });
   },
