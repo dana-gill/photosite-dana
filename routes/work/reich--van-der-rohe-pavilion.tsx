@@ -19,10 +19,10 @@ export default define.page<typeof handler>(function ReichVdr({ data }) {
   return (
     <div class="px-4 py-8 mx-auto min-h-screen bg-gray-50">
       <Head>
-        <title>Reich VDR Photos</title>
+        <title>Reich-Van der Rohe Photos</title>
       </Head>
       <div class="max-w-7xl mx-auto">
-        <PageHeader title="Reich VDR" subtitle="" />
+        <PageHeader title="Reich-Van der Rohe Pavilion" subtitle="October 2025" />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {images.map((image: StrapiImage) => (
             <div key={image.id} class="overflow-hidden max-w-lg fade-in-images">
