@@ -91,6 +91,18 @@ To create a new image gallery page:
 
 The page will automatically fetch and display all images tagged with the specified album name from Strapi via the Deno KV cache.
 
+### File Naming Conventions
+
+The file name determines the navigation title:
+
+- **Single hyphens** (`-`) are converted to spaces
+  - Example: `my-album.tsx` → "My Album"
+
+- **Double hyphens** (`--`) are preserved as single hyphens in the title
+  - Example: `reich--van-der-rohe-pavilion.tsx` → "Reich-Van der Rohe Pavilion"
+
+- Words like "a", "an", "the", "in", "of", "der" are kept lowercase (unless they're the first word)
+
 ## API Endpoints
 
 All endpoints require authentication with the `PHOTOSITE_TOKEN` from your `.env` file.
