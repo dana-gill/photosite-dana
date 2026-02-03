@@ -17,13 +17,45 @@ export const extractNumericSuffix = (filename: string): number => {
   return isNaN(numericValue) ? 0 : numericValue;
 };
 
+const normalizeUrl = (url: string): string => {
+  const isRelativeUrl = url.startsWith("/");
+  return isRelativeUrl ? `${STRAPI_URL}${url}` : url;
+};
+
 const normalizeImageUrl = (image: StrapiImage): StrapiImage => {
-  const isRelativeUrl = image.url.startsWith("/");
-  const normalizedUrl = isRelativeUrl ? `${STRAPI_URL}${image.url}` : image.url;
+  const normalizedFormats = image.formats
+    ? {
+      thumbnail: image.formats.thumbnail
+        ? {
+          ...image.formats.thumbnail,
+          url: normalizeUrl(image.formats.thumbnail.url),
+        }
+        : undefined,
+      small: image.formats.small
+        ? {
+          ...image.formats.small,
+          url: normalizeUrl(image.formats.small.url),
+        }
+        : undefined,
+      medium: image.formats.medium
+        ? {
+          ...image.formats.medium,
+          url: normalizeUrl(image.formats.medium.url),
+        }
+        : undefined,
+      large: image.formats.large
+        ? {
+          ...image.formats.large,
+          url: normalizeUrl(image.formats.large.url),
+        }
+        : undefined,
+    }
+    : null;
 
   return {
     ...image,
-    url: normalizedUrl,
+    url: normalizeUrl(image.url),
+    formats: normalizedFormats,
   };
 };
 

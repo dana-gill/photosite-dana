@@ -70,6 +70,7 @@ export const getAllImages = async (): Promise<ReadonlyArray<StrapiImage>> => {
 export const getImagesByAlbum = async (albumName: string): Promise<ReadonlyArray<StrapiImage> | null> => {
   const kvInstance = await getKv();
   const result = await kvInstance.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
+  console.log(`[KV] Getting album "${albumName}": found=${result.value !== null}, count=${result.value?.length ?? 0}`);
   return result.value;
 };
 
@@ -108,4 +109,9 @@ export const saveToCache = async (
 ): Promise<void> => {
   const kvInstance = await getKv();
   await kvInstance.set(["albums", albumName], images);
+  console.log(`[KV] Saved album "${albumName}" with ${images.length} images`);
+
+  // Verify immediately after saving
+  const verification = await kvInstance.get<ReadonlyArray<StrapiImage>>(["albums", albumName]);
+  console.log(`[KV] Verification for "${albumName}": found=${verification.value !== null}, count=${verification.value?.length ?? 0}`);
 };
