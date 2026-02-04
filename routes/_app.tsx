@@ -85,7 +85,8 @@ export const handler = define.handlers({
 });
 
 export default define.page<typeof handler>(function App({ Component, data }) {
-  const { workLinks, workPreviews } = data;
+  const workLinks = data?.workLinks ?? [];
+  const workPreviews = data?.workPreviews ?? [];
 
   return (
     <html>
