@@ -41,9 +41,11 @@ const capitalizeWords = (str: string): string => {
 
   const segments = str.split("--");
 
-  return segments
+  const result = segments
     .map((segment, index) => capitalizeSegment(segment, index === 0))
     .join("-");
+
+  return result.replace(/-Amp /g, "&");
 };
 
 const generateWorkLinks = async () => {
