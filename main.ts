@@ -3,7 +3,6 @@
 import { App, staticFiles } from "fresh";
 import { define, type State } from "./utils.ts";
 import { refreshCache } from "./services/image-service.ts";
-import { startCacheRefreshScheduler } from "./services/scheduler.ts";
 
 export const app = new App<State>();
 
@@ -23,9 +22,6 @@ try {
     error instanceof Error ? error.message : String(error),
   );
 }
-
-// Start background refresh scheduler
-startCacheRefreshScheduler(kv);
 
 app.use(staticFiles());
 
