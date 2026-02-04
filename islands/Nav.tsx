@@ -1,6 +1,7 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import type { NavLink } from "../types/nav.ts";
 import WorkModal from "./WorkModal.tsx";
+import WorkModalMobile from "./WorkModalMobile.tsx";
 
 const navLinks: ReadonlyArray<NavLink> = [
   { href: "/about", label: "About" },
@@ -8,6 +9,20 @@ const navLinks: ReadonlyArray<NavLink> = [
 
 export default function Nav() {
   const [isWorkOpen, setIsWorkOpen] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => {
+      window.removeEventListener("resize", checkScreenSize);
+    };
+  }, []);
 
   const handleWorkOpen = () => {
     setIsWorkOpen(!isWorkOpen);
@@ -55,7 +70,11 @@ export default function Nav() {
           </ul>
         </div>
       </nav>
-      <WorkModal isOpen={isWorkOpen} onClose={handleWorkClose} />
+      {isSmallScreen ? (
+        <WorkModalMobile isOpen={isWorkOpen} onClose={handleWorkClose} />
+      ) : (
+        <WorkModal isOpen={isWorkOpen} onClose={handleWorkClose} />
+      )}
     </>
   );
 }
