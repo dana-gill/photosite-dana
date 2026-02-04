@@ -6,6 +6,10 @@
   font-family: "Baskervville", serif;
 }
 
+body {
+  background-color: var(--color-gray-50);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
