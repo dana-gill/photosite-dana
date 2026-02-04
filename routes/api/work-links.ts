@@ -21,6 +21,10 @@ const workLinks: ReadonlyArray<NavLink> = [
     "label": "Meri in Pberg"
   },
   {
+    "href": "/work/niemeyer-in-rio",
+    "label": "Niemeyer in Rio"
+  },
+  {
     "href": "/work/ornate",
     "label": "Ornate"
   },
