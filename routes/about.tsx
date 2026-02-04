@@ -24,7 +24,7 @@ export default define.page<typeof handler>(function About({ data }) {
         <meta property="og:title" content="About - Dana Gill Photography" />
         <meta property="og:description" content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film." />
         <meta property="og:image" content="https://reassuring-peace-c7bac71a31.media.strapiapp.com/about_3_a193280a6a.jpg" />
-        <meta property="og:url" content="https://danagill.com/about" />
+        <meta property="og:url" content="https://www.danagill.photography/about" />
         <meta name="twitter:title" content="About - Dana Gill Photography" />
         <meta name="twitter:description" content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film." />
         <meta name="twitter:image" content="https://reassuring-peace-c7bac71a31.media.strapiapp.com/about_3_a193280a6a.jpg" />
