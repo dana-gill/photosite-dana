@@ -35,9 +35,10 @@ export default function WorkModalMobile({ isOpen, onClose }: WorkModalMobileProp
   useEffect(() => {
     if (isOpen) {
       setIsOpening(true);
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setIsOpening(false);
-      }, 10);
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
