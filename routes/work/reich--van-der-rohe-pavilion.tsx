@@ -16,7 +16,7 @@ export default define.page<typeof handler>(function ReichVdr({ data }) {
   const images = data;
 
   return (
-    <div class="px-4 py-8 mx-auto min-h-screen bg-gray-50">
+    <div class="px-4 py-8 mx-auto md:min-h-screen bg-gray-50">
       <Head>
         <title>Reich-Van der Rohe Photos</title>
       </Head>
