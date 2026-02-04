@@ -48,16 +48,6 @@ export const getCacheMetadata = async (
   return result.value;
 };
 
-export const isCacheStale = (metadata: CacheMetadata): boolean => {
-  const intervalMinutes = Number("200");
-  const intervalMs = intervalMinutes * 60 * 1000;
-  const lastRefresh = new Date(metadata.lastRefresh);
-  const now = new Date();
-  const timeSinceRefresh = now.getTime() - lastRefresh.getTime();
-
-  return timeSinceRefresh >= intervalMs;
-};
-
 export const getAllImages = async (
   kv: Deno.Kv,
 ): Promise<ReadonlyArray<StrapiImage>> => {

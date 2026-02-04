@@ -5,7 +5,6 @@ import { define, type State } from "./utils.ts";
 import { refreshCache } from "./services/image-service.ts";
 import {
   getCacheMetadata,
-  isCacheStale,
 } from "./services/cache-manager.ts";
 
 export const app = new App<State>();
@@ -18,7 +17,7 @@ console.log("Checking cache status...");
 
 try {
   const metadata = await getCacheMetadata(kv);
-  const shouldRefresh = !metadata || isCacheStale(metadata);
+  const shouldRefresh = !metadata;
 
   if (shouldRefresh) {
     const reason = !metadata ? "cache is empty" : "cache is stale";
