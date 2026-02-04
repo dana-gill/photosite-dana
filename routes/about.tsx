@@ -25,7 +25,7 @@ export default define.page<typeof handler>(function About({ data }) {
       <div class="max-w-4xl mx-auto pt-20 flex flex-col md:flex-row gap-8">
         {aboutImage && (
           <div class="flex justify-flex-start fade-in-title">
-            <div class="max-w-[2000px] max-h-[2000px]">
+            <div class="max-w-[1000px] max-h-[2000px]">
               <Image
                 src={aboutImage.url}
                 alt={aboutImage.alternativeText ?? aboutImage.name}
