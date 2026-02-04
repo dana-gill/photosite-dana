@@ -3,6 +3,10 @@
 import { App, staticFiles } from "fresh";
 import { define, type State } from "./utils.ts";
 import { refreshCache } from "./services/image-service.ts";
+import {
+  getCacheMetadata,
+  isCacheStale,
+} from "./services/cache-manager.ts";
 
 export const app = new App<State>();
 
@@ -10,11 +14,22 @@ export const app = new App<State>();
 const kv = await Deno.openKv();
 
 // Initialize cache on startup
-console.log("Initializing cache from Strapi...");
+console.log("Checking cache status...");
 
 try {
-  await refreshCache(kv);
-  console.log("Cache initialized successfully");
+  const metadata = await getCacheMetadata(kv);
+  const shouldRefresh = !metadata || isCacheStale(metadata);
+
+  if (shouldRefresh) {
+    const reason = !metadata ? "cache is empty" : "cache is stale";
+    console.log(`Fetching from Strapi (${reason})...`);
+    await refreshCache(kv);
+    console.log("Cache initialized successfully");
+  } else {
+    console.log(
+      `Cache is fresh (last refresh: ${metadata.lastRefresh}), skipping Strapi fetch`,
+    );
+  }
 } catch (error) {
   console.error("Failed to initialize cache:", error);
   console.error(
