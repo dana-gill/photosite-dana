@@ -1,7 +1,12 @@
 import { useEffect, useState } from "preact/hooks";
+import type { StrapiImage } from "../types/strapi.ts";
 import Carousel from "./Carousel.tsx";
 
-export default function CarouselWrapper() {
+interface CarouselWrapperProps {
+  images: ReadonlyArray<StrapiImage>;
+}
+
+export default function CarouselWrapper({ images }: CarouselWrapperProps) {
   const [isFadingIn, setIsFadingIn] = useState(true);
 
   useEffect(() => {
@@ -16,7 +21,7 @@ export default function CarouselWrapper() {
         isFadingIn ? "opacity-0" : "opacity-100"
       }`}
     >
-      <Carousel />
+      <Carousel images={images} />
     </div>
   );
 }

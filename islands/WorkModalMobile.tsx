@@ -1,36 +1,25 @@
 import { useEffect, useState } from "preact/hooks";
 import type { NavLink } from "../types/nav.ts";
 
-interface WorkModalMobileProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 interface WorkPreview {
+  height: number;
   href: string;
   imageUrl: string;
   width: number;
-  height: number;
 }
 
-export default function WorkModalMobile({ isOpen, onClose }: WorkModalMobileProps) {
+interface WorkModalMobileProps {
+  isOpen: boolean;
+  onClose: () => void;
+  workLinks: ReadonlyArray<NavLink>;
+  workPreviews: ReadonlyArray<WorkPreview>;
+}
+
+export default function WorkModalMobile(
+  { isOpen, onClose, workLinks, workPreviews }: WorkModalMobileProps,
+) {
   const [isClosing, setIsClosing] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
-  const [workLinks, setWorkLinks] = useState<ReadonlyArray<NavLink>>([]);
-  const [workPreviews, setWorkPreviews] = useState<ReadonlyArray<WorkPreview>>([]);
-
-  useEffect(() => {
-    const fetchWorkData = async () => {
-      const linksResponse = await fetch("/api/work-links");
-      const links = await linksResponse.json();
-      setWorkLinks(links);
-
-      const previewsResponse = await fetch("/api/work-previews");
-      const previews = await previewsResponse.json();
-      setWorkPreviews(previews);
-    };
-    fetchWorkData();
-  }, []);
 
   useEffect(() => {
     if (isOpen) {

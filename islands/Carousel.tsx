@@ -1,20 +1,12 @@
-import { useEffect, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import type { StrapiImage } from "../types/strapi.ts";
 
-export default function Carousel() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [images, setImages] = useState<ReadonlyArray<StrapiImage>>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface CarouselProps {
+  images: ReadonlyArray<StrapiImage>;
+}
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      const response = await fetch("/api/recent-images");
-      const data = await response.json();
-      setImages(data);
-      setIsLoading(false);
-    };
-    fetchImages();
-  }, []);
+export default function Carousel({ images }: CarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleNext = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -25,14 +17,6 @@ export default function Carousel() {
       prevIndex === 0 ? images.length - 1 : prevIndex - 1
     );
   };
-
-  if (isLoading) {
-    return (
-      <div class="w-full h-[70vh] flex items-center justify-center">
-        <p class="text-gray-500">Loading...</p>
-      </div>
-    );
-  }
 
   const hasNoImages = images.length === 0;
   if (hasNoImages) {

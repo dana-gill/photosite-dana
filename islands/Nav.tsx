@@ -3,11 +3,23 @@ import type { NavLink } from "../types/nav.ts";
 import WorkModal from "./WorkModal.tsx";
 import WorkModalMobile from "./WorkModalMobile.tsx";
 
+interface WorkPreview {
+  height: number;
+  href: string;
+  imageUrl: string;
+  width: number;
+}
+
+interface NavProps {
+  workLinks: ReadonlyArray<NavLink>;
+  workPreviews: ReadonlyArray<WorkPreview>;
+}
+
 const navLinks: ReadonlyArray<NavLink> = [
   { href: "/about", label: "About" },
 ];
 
-export default function Nav() {
+export default function Nav({ workLinks, workPreviews }: NavProps) {
   const [isWorkOpen, setIsWorkOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
@@ -71,9 +83,19 @@ export default function Nav() {
         </div>
       </nav>
       {isSmallScreen ? (
-        <WorkModalMobile isOpen={isWorkOpen} onClose={handleWorkClose} />
+        <WorkModalMobile
+          isOpen={isWorkOpen}
+          onClose={handleWorkClose}
+          workLinks={workLinks}
+          workPreviews={workPreviews}
+        />
       ) : (
-        <WorkModal isOpen={isWorkOpen} onClose={handleWorkClose} />
+        <WorkModal
+          isOpen={isWorkOpen}
+          onClose={handleWorkClose}
+          workLinks={workLinks}
+          workPreviews={workPreviews}
+        />
       )}
     </>
   );

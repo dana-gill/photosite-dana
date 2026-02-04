@@ -1,16 +1,18 @@
 import { useEffect, useState } from "preact/hooks";
 import type { NavLink } from "../types/nav.ts";
 
-interface WorkModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 interface WorkPreview {
+  height: number;
   href: string;
   imageUrl: string;
   width: number;
-  height: number;
+}
+
+interface WorkModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  workLinks: ReadonlyArray<NavLink>;
+  workPreviews: ReadonlyArray<WorkPreview>;
 }
 
 interface MousePosition {
@@ -18,26 +20,16 @@ interface MousePosition {
   y: number;
 }
 
-export default function WorkModal({ isOpen, onClose }: WorkModalProps) {
+export default function WorkModal(
+  { isOpen, onClose, workLinks, workPreviews }: WorkModalProps,
+) {
   const [isClosing, setIsClosing] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
-  const [workLinks, setWorkLinks] = useState<ReadonlyArray<NavLink>>([]);
-  const [workPreviews, setWorkPreviews] = useState<ReadonlyArray<WorkPreview>>([]);
   const [hoveredHref, setHoveredHref] = useState<string | null>(null);
-  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const fetchWorkData = async () => {
-      const linksResponse = await fetch("/api/work-links");
-      const links = await linksResponse.json();
-      setWorkLinks(links);
-
-      const previewsResponse = await fetch("/api/work-previews");
-      const previews = await previewsResponse.json();
-      setWorkPreviews(previews);
-    };
-    fetchWorkData();
-  }, []);
+  const [mousePosition, setMousePosition] = useState<MousePosition>({
+    x: 0,
+    y: 0,
+  });
 
   useEffect(() => {
     if (isOpen) {
