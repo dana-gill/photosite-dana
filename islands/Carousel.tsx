@@ -44,40 +44,46 @@ export default function Carousel() {
   }
 
   return (
-    <div class="relative w-full h-[70vh] overflow-hidden">
-      <div class="relative w-full h-full">
-        {images.map((image, index) => {
-          const url = image.formats?.large?.url ?? image.url;
-          const isActive = index === currentIndex;
-          return (
-            <div
-              key={image.id}
-              class={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
-                isActive ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <img
-                src={url}
-                alt={image.alternativeText ?? image.name}
-                class="max-w-full max-h-full object-contain"
-                loading={index === 0 ? "eager" : "lazy"}
-              />
-            </div>
-          );
-        })}
+    <div class="w-full flex flex-col items-center gap-4">
+      <div class="relative w-full h-[70vh] overflow-hidden">
+        <div class="relative w-full h-full">
+          {images.map((image, index) => {
+            const url = image.formats?.large?.url ?? image.url;
+            const isActive = index === currentIndex;
+            return (
+              <div
+                key={image.id}
+                class={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
+                  isActive ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <img
+                  src={url}
+                  alt={image.alternativeText ?? image.name}
+                  class="max-w-full max-h-full object-contain"
+                  loading={index === 0 ? "eager" : "lazy"}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          onClick={handlePrevious}
+          class="absolute left-0 top-0 w-1/2 h-full cursor-w-resize"
+          aria-label="Previous image"
+        />
+
+        <div
+          onClick={handleNext}
+          class="absolute right-0 top-0 w-1/2 h-full cursor-e-resize"
+          aria-label="Next image"
+        />
       </div>
 
-      <div
-        onClick={handlePrevious}
-        class="absolute left-0 top-0 w-1/2 h-full cursor-w-resize"
-        aria-label="Previous image"
-      />
-
-      <div
-        onClick={handleNext}
-        class="absolute right-0 top-0 w-1/2 h-full cursor-e-resize"
-        aria-label="Next image"
-      />
+      <div class="text-gray-600 text-xs lg:hidden">
+        Preview - {currentIndex + 1} / {images.length}
+      </div>
     </div>
   );
 }
