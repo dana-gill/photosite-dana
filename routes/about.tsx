@@ -21,6 +21,13 @@ export default define.page<typeof handler>(function About({ data }) {
     <div class="px-4 py-8 mx-auto md:min-h-screen bg-gray-50">
       <Head>
         <title>About - Dana Gill Photography</title>
+        <meta property="og:title" content="About - Dana Gill Photography" />
+        <meta property="og:description" content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film." />
+        <meta property="og:image" content="https://reassuring-peace-c7bac71a31.media.strapiapp.com/about_3_a193280a6a.jpg" />
+        <meta property="og:url" content="https://danagill.com/about" />
+        <meta name="twitter:title" content="About - Dana Gill Photography" />
+        <meta name="twitter:description" content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film." />
+        <meta name="twitter:image" content="https://reassuring-peace-c7bac71a31.media.strapiapp.com/about_3_a193280a6a.jpg" />
       </Head>
       <div class="max-w-4xl mx-auto pt-20 flex flex-col md:flex-row gap-8">
         {aboutImage && (

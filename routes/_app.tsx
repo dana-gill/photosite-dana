@@ -12,6 +12,9 @@ export default define.page(function App({ Component }) {
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Dana Gill Photography</title>
+        <meta property="og:site_name" content="Dana Gill Photography" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
         <link rel="icon" type="image/jpeg" href="/favicon.jpg" />
       </head>
       <body>
