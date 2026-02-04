@@ -170,7 +170,7 @@ Manually trigger a cache refresh from Strapi:
 **Local:**
 
 ```bash
-curl -X POST http://localhost:8000/api/cache/refresh \
+curl -X POST http://localhost:5174/api/cache/refresh \
   -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
 ```
 
