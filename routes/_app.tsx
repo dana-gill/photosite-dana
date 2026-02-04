@@ -17,7 +17,9 @@ const extractAlbumNameFromFile = async (
   return match ? match[1] : null;
 };
 
-const fetchWorkPreviews = async (kv: Deno.Kv): Promise<ReadonlyArray<WorkPreview>> => {
+const fetchWorkPreviews = async (
+  kv: Deno.Kv,
+): Promise<ReadonlyArray<WorkPreview>> => {
   const workDir = `${Deno.cwd()}/routes/work`;
   const previews: WorkPreview[] = [];
 
@@ -90,10 +92,12 @@ export default define.page<typeof handler>(function App({ Component, data }) {
 
   return (
     <html>
-      {/* Congrats! You found an easter egg.
+      {
+        /* Congrats! You found an easter egg.
         I wrote this website myself.
         You are welcome to roast my code here:
-        https://github.com/dana-gill/photosite-dana */}
+        https://github.com/dana-gill/photosite-dana */
+      }
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

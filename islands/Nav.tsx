@@ -25,14 +25,14 @@ export default function Nav({ workLinks, workPreviews }: NavProps) {
 
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsSmallScreen(window.innerWidth < 768);
+      setIsSmallScreen(globalThis.innerWidth < 768);
     };
 
     checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
+    globalThis.addEventListener("resize", checkScreenSize);
 
     return () => {
-      window.removeEventListener("resize", checkScreenSize);
+      globalThis.removeEventListener("resize", checkScreenSize);
     };
   }, []);
 
@@ -82,21 +82,23 @@ export default function Nav({ workLinks, workPreviews }: NavProps) {
           </ul>
         </div>
       </nav>
-      {isSmallScreen ? (
-        <WorkModalMobile
-          isOpen={isWorkOpen}
-          onClose={handleWorkClose}
-          workLinks={workLinks}
-          workPreviews={workPreviews}
-        />
-      ) : (
-        <WorkModal
-          isOpen={isWorkOpen}
-          onClose={handleWorkClose}
-          workLinks={workLinks}
-          workPreviews={workPreviews}
-        />
-      )}
+      {isSmallScreen
+        ? (
+          <WorkModalMobile
+            isOpen={isWorkOpen}
+            onClose={handleWorkClose}
+            workLinks={workLinks}
+            workPreviews={workPreviews}
+          />
+        )
+        : (
+          <WorkModal
+            isOpen={isWorkOpen}
+            onClose={handleWorkClose}
+            workLinks={workLinks}
+            workPreviews={workPreviews}
+          />
+        )}
     </>
   );
 }

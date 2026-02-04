@@ -7,7 +7,8 @@ import { getImagesByAlbum } from "../../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const images = await getImagesByAlbum(ctx.state.kv, "a-blossom-drowning") ?? [];
+    const images = await getImagesByAlbum(ctx.state.kv, "a-blossom-drowning") ??
+      [];
     return { data: images };
   },
 });

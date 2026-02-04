@@ -7,7 +7,8 @@ import { getImagesByAlbum } from "../../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const images = await getImagesByAlbum(ctx.state.kv, "niemeyer-in-rio") ?? [];
+    const images = await getImagesByAlbum(ctx.state.kv, "niemeyer-in-rio") ??
+      [];
     return { data: images };
   },
 });
@@ -21,7 +22,10 @@ export default define.page<typeof handler>(function NiemeyerInRio({ data }) {
         <title>Niemeyer in Rio Photos</title>
       </Head>
       <div class="max-w-7xl mx-auto">
-        <PageHeader title="Niemeyer in Rio" subtitle="Photographing Niemeyer buildings in Niterói. October 2024." />
+        <PageHeader
+          title="Niemeyer in Rio"
+          subtitle="Photographing Niemeyer buildings in Niterói. October 2024."
+        />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {images.map((image: StrapiImage) => (
             <div key={image.id} class="overflow-hidden max-w-lg fade-in-images">

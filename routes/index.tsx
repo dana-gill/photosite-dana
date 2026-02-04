@@ -9,7 +9,10 @@ export const handler = define.handlers({
     const shuffledImages = [...allImages]
       .filter((image) => !image.name.includes("about"))
       .sort(() => Math.random() - 0.5);
-    const randomImages: ReadonlyArray<StrapiImage> = shuffledImages.slice(0, 10);
+    const randomImages: ReadonlyArray<StrapiImage> = shuffledImages.slice(
+      0,
+      10,
+    );
     return { data: randomImages };
   },
 });
@@ -22,4 +25,4 @@ export default define.page<typeof handler>(function Home({ data }) {
       <CarouselWrapper images={images} />
     </div>
   );
-})
+});

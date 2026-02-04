@@ -8,7 +8,9 @@ interface WorkPreview {
   height: number;
 }
 
-const extractAlbumNameFromFile = async (filePath: string): Promise<string | null> => {
+const extractAlbumNameFromFile = async (
+  filePath: string,
+): Promise<string | null> => {
   const content = await Deno.readTextFile(filePath);
   const match = content.match(/getImagesByAlbum\([^,]+,\s*["']([^"']+)["']\)/);
   return match ? match[1] : null;
@@ -36,18 +38,18 @@ export const handler = define.handlers({
         if (images && images.length > 0) {
           const firstImage = images[0];
           const imageUrl = firstImage.formats?.medium?.url ??
-                           firstImage.formats?.small?.url ??
-                           firstImage.url;
+            firstImage.formats?.small?.url ??
+            firstImage.url;
 
           return {
             href: `/work/${fileName}`,
             imageUrl,
             width: firstImage.formats?.medium?.width ??
-                   firstImage.formats?.small?.width ??
-                   firstImage.width,
+              firstImage.formats?.small?.width ??
+              firstImage.width,
             height: firstImage.formats?.medium?.height ??
-                    firstImage.formats?.small?.height ??
-                    firstImage.height,
+              firstImage.formats?.small?.height ??
+              firstImage.height,
           };
         }
       }

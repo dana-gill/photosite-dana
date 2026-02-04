@@ -1,11 +1,9 @@
 /// <reference lib="deno.unstable" />
 
 import { App, staticFiles } from "fresh";
-import { define, type State } from "./utils.ts";
+import type { State } from "./utils.ts";
 import { refreshCache } from "./services/image-service.ts";
-import {
-  getCacheMetadata,
-} from "./services/cache-manager.ts";
+import { getCacheMetadata } from "./services/cache-manager.ts";
 
 export const app = new App<State>();
 
