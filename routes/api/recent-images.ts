@@ -6,7 +6,7 @@ export const handler = define.handlers({
   GET: async (ctx) => {
     const allImages = await getAllImages(ctx.state.kv);
 
-    const shuffledImages = [...allImages].sort(() => Math.random() - 0.5);
+    const shuffledImages = [...allImages].filter(image => !image.name.includes("about")).sort(() => Math.random() - 0.5);
 
     const randomImages: ReadonlyArray<StrapiImage> = shuffledImages.slice(0, 10);
 
