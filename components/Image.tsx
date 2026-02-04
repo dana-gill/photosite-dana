@@ -7,7 +7,7 @@ export const Image = ({ alt, height, src, width }: ImageProps) => {
       alt={alt}
       width={width}
       height={height}
-      class="w-full h-auto"
+      class="max-w-full h-auto"
       loading="lazy"
     />
   );

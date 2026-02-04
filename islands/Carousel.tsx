@@ -52,14 +52,14 @@ export default function Carousel() {
           return (
             <div
               key={image.id}
-              class={`absolute inset-0 transition-opacity duration-1000 ${
+              class={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
                 isActive ? "opacity-100" : "opacity-0"
               }`}
             >
               <img
                 src={url}
                 alt={image.alternativeText ?? image.name}
-                class="w-full h-full object-contain"
+                class="max-w-full max-h-full object-contain"
                 loading={index === 0 ? "eager" : "lazy"}
               />
             </div>
