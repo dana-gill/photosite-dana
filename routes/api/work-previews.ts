@@ -16,7 +16,7 @@ const extractAlbumNameFromFile = async (filePath: string): Promise<string | null
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const workDir = new URL("../../routes/work", import.meta.url).pathname;
+    const workDir = `${Deno.cwd()}/routes/work`;
     const previews: WorkPreview[] = [];
 
     const entries = [];
