@@ -1,94 +1,9 @@
 import { define } from "../utils.ts";
-import { getImagesByAlbum } from "../services/cache-manager.ts";
 import Nav from "../islands/Nav.tsx";
 
-interface WorkPreview {
-  height: number;
-  href: string;
-  imageUrl: string;
-  width: number;
-}
-
-const extractAlbumNameFromFile = async (
-  filePath: string,
-): Promise<string | null> => {
-  const content = await Deno.readTextFile(filePath);
-  const match = content.match(/getImagesByAlbum\([^,]+,\s*["']([^"']+)["']\)/);
-  return match ? match[1] : null;
-};
-
-const fetchWorkPreviews = async (
-  kv: Deno.Kv,
-): Promise<ReadonlyArray<WorkPreview>> => {
-  const workDir = `${Deno.cwd()}/routes/work`;
-  const previews: WorkPreview[] = [];
-
-  const entries = [];
-  for await (const entry of Deno.readDir(workDir)) {
-    if (entry.isFile && entry.name.endsWith(".tsx")) {
-      entries.push(entry);
-    }
-  }
-
-  const previewPromises = entries.map(async (entry) => {
-    const fileName = entry.name.replace(".tsx", "");
-    const filePath = `${workDir}/${entry.name}`;
-    const albumName = await extractAlbumNameFromFile(filePath);
-
-    if (albumName) {
-      const images = await getImagesByAlbum(kv, albumName);
-      if (images && images.length > 0) {
-        const firstImage = images[0];
-        const imageUrl = firstImage.formats?.medium?.url ??
-          firstImage.formats?.small?.url ??
-          firstImage.url;
-
-        return {
-          height: firstImage.formats?.medium?.height ??
-            firstImage.formats?.small?.height ??
-            firstImage.height,
-          href: `/work/${fileName}`,
-          imageUrl,
-          width: firstImage.formats?.medium?.width ??
-            firstImage.formats?.small?.width ??
-            firstImage.width,
-        };
-      }
-    }
-    return null;
-  });
-
-  const results = await Promise.all(previewPromises);
-  const filteredPreviews = results.filter((preview): preview is WorkPreview =>
-    preview !== null
-  );
-
-  previews.push(...filteredPreviews);
-
-  return previews;
-};
-
-export const handler = define.handlers({
-  GET: async (ctx) => {
-    const { handler: workLinksHandler } = await import(
-      "./api/work-links.ts"
-    );
-    const workLinksResponse = await workLinksHandler();
-    const workLinks = await workLinksResponse.json();
-    const workPreviews = await fetchWorkPreviews(ctx.state.kv);
-
-    return {
-      data: {
-        workLinks,
-        workPreviews,
-      },
-    };
-  },
-});
-
-export default define.page<typeof handler>(function App({ Component, data }) {
-  const workLinks = data?.workLinks ?? [];
-  const workPreviews = data?.workPreviews ?? [];
+export default define.page(function App({ Component, state }) {
+  const workLinks = state.workLinks;
+  const workPreviews = state.workPreviews;
 
   return (
     <html>

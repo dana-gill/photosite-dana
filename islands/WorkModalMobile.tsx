@@ -1,12 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import type { NavLink } from "../types/nav.ts";
-
-interface WorkPreview {
-  height: number;
-  href: string;
-  imageUrl: string;
-  width: number;
-}
+import type { WorkPreview } from "../utils.ts";
 
 interface WorkModalMobileProps {
   isOpen: boolean;

@@ -1,14 +1,8 @@
 import { useEffect, useState } from "preact/hooks";
 import type { NavLink } from "../types/nav.ts";
+import type { WorkPreview } from "../utils.ts";
 import WorkModal from "./WorkModal.tsx";
 import WorkModalMobile from "./WorkModalMobile.tsx";
-
-interface WorkPreview {
-  height: number;
-  href: string;
-  imageUrl: string;
-  width: number;
-}
 
 interface NavProps {
   workLinks: ReadonlyArray<NavLink>;

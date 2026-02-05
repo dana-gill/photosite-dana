@@ -1,12 +1,5 @@
-import { define } from "../../utils.ts";
+import { define, type WorkPreview } from "../../utils.ts";
 import { getImagesByAlbum } from "../../services/cache-manager.ts";
-
-interface WorkPreview {
-  href: string;
-  imageUrl: string;
-  width: number;
-  height: number;
-}
 
 const extractAlbumNameFromFile = async (
   filePath: string,
