@@ -19,16 +19,22 @@ console.log("Checking cache status...");
 
 try {
   const metadata = await getCacheMetadata(kv);
-  const shouldRefresh = !metadata;
+  const hasValidMetadata = metadata && metadata.albumCount > 0 && metadata.totalImages > 0;
+  const shouldRefresh = !hasValidMetadata;
 
   if (shouldRefresh) {
-    const reason = !metadata ? "cache is empty" : "cache is stale";
+    const reason = !metadata
+      ? "metadata missing"
+      : "cache empty or corrupted";
     console.log(`Fetching from Strapi (${reason})...`);
     await refreshCache(kv);
-    console.log("Cache initialized successfully");
+    const newMetadata = await getCacheMetadata(kv);
+    console.log(
+      `Cache initialized: ${newMetadata?.albumCount} albums, ${newMetadata?.totalImages} images`,
+    );
   } else {
     console.log(
-      `Cache is fresh (last refresh: ${metadata.lastRefresh}), skipping Strapi fetch`,
+      `Cache is fresh: ${metadata.albumCount} albums, ${metadata.totalImages} images (last refresh: ${metadata.lastRefresh})`,
     );
   }
 } catch (error) {
