@@ -6,40 +6,40 @@ import type { NavLink } from "../../types/nav.ts";
 const workLinks: ReadonlyArray<NavLink> = [
   {
     "href": "/work/a-blossom-drowning",
-    "label": "A Blossom Drowning",
+    "label": "A Blossom Drowning"
   },
   {
     "href": "/work/coron",
-    "label": "Coron",
+    "label": "Coron"
   },
   {
     "href": "/work/e--amp-c",
-    "label": "E&C",
+    "label": "E&C"
   },
   {
     "href": "/work/loyola-retreat-house",
-    "label": "Loyola Retreat House",
+    "label": "Loyola Retreat House"
   },
   {
     "href": "/work/meri-in-pberg",
-    "label": "Meri in Pberg",
+    "label": "Meri in Pberg"
   },
   {
     "href": "/work/niemeyer-in-rio",
-    "label": "Niemeyer in Rio",
+    "label": "Niemeyer in Rio"
   },
   {
     "href": "/work/ornate",
-    "label": "Ornate",
+    "label": "Ornate"
   },
   {
     "href": "/work/reich--van-der-rohe-pavilion",
-    "label": "Reich-Van der Rohe Pavilion",
+    "label": "Reich-Van der Rohe Pavilion"
   },
   {
     "href": "/work/sunchasing",
-    "label": "Sunchasing",
-  },
+    "label": "Sunchasing"
+  }
 ];
 
 export const handler = () => {
