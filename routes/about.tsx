@@ -49,10 +49,11 @@ export default define.page<typeof handler>(function About({ data }) {
           <div class="flex justify-flex-start fade-in-title">
             <div class="max-w-[1000px] max-h-[2000px]">
               <Image
-                src={aboutImage.url}
                 alt={aboutImage.alternativeText ?? aboutImage.name}
-                width={aboutImage.width}
+                formats={aboutImage.formats}
                 height={aboutImage.height}
+                src={aboutImage.url}
+                width={aboutImage.width}
               />
             </div>
           </div>

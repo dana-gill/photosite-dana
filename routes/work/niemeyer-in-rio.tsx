@@ -30,10 +30,11 @@ export default define.page<typeof handler>(function NiemeyerInRio({ data }) {
           {images.map((image: StrapiImage) => (
             <div key={image.id} class="overflow-hidden max-w-lg fade-in-images">
               <Image
-                src={image.url}
                 alt={image.alternativeText ?? image.name}
-                width={image.width}
+                formats={image.formats}
                 height={image.height}
+                src={image.url}
+                width={image.width}
               />
               {image.caption && (
                 <div class="p-4">
