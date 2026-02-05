@@ -5,6 +5,28 @@ interface CarouselProps {
   images: ReadonlyArray<StrapiImage>;
 }
 
+const buildSrcSet = (image: StrapiImage): string => {
+  const srcSetParts: string[] = [];
+
+  if (image.formats?.small) {
+    srcSetParts.push(`${image.formats.small.url} ${image.formats.small.width}w`);
+  }
+  if (image.formats?.medium) {
+    srcSetParts.push(`${image.formats.medium.url} ${image.formats.medium.width}w`);
+  }
+  if (image.formats?.large) {
+    srcSetParts.push(`${image.formats.large.url} ${image.formats.large.width}w`);
+  }
+
+  srcSetParts.push(`${image.url} ${image.width}w`);
+
+  return srcSetParts.join(", ");
+};
+
+const getDefaultSrc = (image: StrapiImage): string => {
+  return image.formats?.medium?.url ?? image.formats?.small?.url ?? image.url;
+};
+
 export default function Carousel({ images }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -32,7 +54,8 @@ export default function Carousel({ images }: CarouselProps) {
       <div class="relative w-full h-[70vh] overflow-hidden">
         <div class="relative w-full h-full">
           {images.map((image, index) => {
-            const url = image.formats?.large?.url ?? image.url;
+            const srcSet = buildSrcSet(image);
+            const defaultSrc = getDefaultSrc(image);
             const isActive = index === currentIndex;
             return (
               <div
@@ -42,7 +65,9 @@ export default function Carousel({ images }: CarouselProps) {
                 }`}
               >
                 <img
-                  src={url}
+                  src={defaultSrc}
+                  srcSet={srcSet}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 80vw"
                   alt={image.alternativeText ?? image.name}
                   class="max-w-full max-h-full object-contain"
                   loading={index === 0 ? "eager" : "lazy"}
