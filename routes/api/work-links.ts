@@ -39,6 +39,10 @@ const workLinks: ReadonlyArray<NavLink> = [
   {
     "href": "/work/sunchasing",
     "label": "Sunchasing"
+  },
+  {
+    "href": "/work/when-the-light-hits",
+    "label": "When the Light Hits"
   }
 ];
 
