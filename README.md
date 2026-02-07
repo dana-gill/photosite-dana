@@ -120,14 +120,14 @@ file.
 
 ```bash
 curl http://localhost:8000/api/albums \
-  -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
+  -H "Authorization: Bearer PHOTOSITE_TOKEN"
 ```
 
 **Production:**
 
 ```bash
 curl https://photosite-dana.danadeploy.deno.net/api/albums \
-  -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
+  -H "Authorization: Bearer PHOTOSITE_TOKEN"
 ```
 
 Returns a list of all albums with image counts:
@@ -151,14 +151,14 @@ Returns a list of all albums with image counts:
 
 ```bash
 curl http://localhost:8000/api/albums/meri2025 \
-  -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
+  -H "Authorization: Bearer PHOTOSITE_TOKEN"
 ```
 
 **Production:**
 
 ```bash
 curl https://photosite-dana.danadeploy.deno.net/api/albums/meri2025 \
-  -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
+  -H "Authorization: Bearer PHOTOSITE_TOKEN"
 ```
 
 Returns all images for the specified album with full Strapi metadata.
@@ -171,14 +171,14 @@ Manually trigger a cache refresh from Strapi:
 
 ```bash
 curl -X POST http://localhost:5174/api/cache/refresh \
-  -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
+  -H "Authorization: Bearer PHOTOSITE_TOKEN"
 ```
 
 **Production:**
 
 ```bash
 curl -X POST https://photosite-dana.danadeploy.deno.net/api/cache/refresh \
-  -H "Authorization: Bearer YOUR_PHOTOSITE_TOKEN"
+  -H "Authorization: Bearer PHOTOSITE_TOKEN"
 ```
 
 Returns refresh status and cache metadata:
@@ -186,6 +186,7 @@ Returns refresh status and cache metadata:
 ```json
 {
   "success": true,
+  "message": "Cache cleared and refreshed successfully",
   "metadata": {
     "lastRefresh": "2026-02-01T19:30:00.000Z",
     "totalImages": 198,
@@ -193,5 +194,3 @@ Returns refresh status and cache metadata:
   }
 }
 ```
-
-Replace `YOUR_PHOTOSITE_TOKEN` with the value from your `.env` file.
