@@ -22,7 +22,7 @@ export default define.page<typeof handler>(
           <title>E&C Photos</title>
         </Head>
         <div class="max-w-7xl mx-auto">
-          <PageHeader title="E&C" subtitle="December 2024." />
+          <PageHeader title="E&C" subtitle="December 2024" />
           <div class="flex flex-wrap justify-evenly gap-6 items-center">
             {images.map((image: StrapiImage) => (
               <div
