@@ -3,9 +3,8 @@
   "unstable": ["kv"],
   "tasks": {
     "check": "deno fmt --check . && deno lint . && deno check",
-    "dev": "deno task generate-work-links && deno run -A --unstable-kv --env --node-modules-dir=manual vite",
-    "generate-work-links": "deno run -A scripts/generate-work-links.ts",
-    "build": "deno task generate-work-links && vite build",
+    "dev": "deno run -A --unstable-kv --env --node-modules-dir=manual vite",
+    "build": "vite build",
     "start": "deno serve -A --unstable-kv --env _fresh/server.js",
     "update": "deno run -A -r jsr:@fresh/update .",
     "deploy": "deployctl deploy --unstable-kv"
