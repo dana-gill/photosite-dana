@@ -1,5 +1,6 @@
 import type { AlbumImages, StrapiImage } from "../types/strapi.ts";
-import { saveAllAlbums } from "./cache-manager.ts";
+import { fetchAllAlbums, fetchPhotosByAlbum } from "./album-service.ts";
+import { saveAllAlbumPhotos, saveAllAlbums } from "./cache-manager.ts";
 
 const STRAPI_API_TOKEN = Deno.env.get("STRAPI_API_TOKEN") ?? "";
 const STRAPI_URL = Deno.env.get("STRAPI_URL") ?? "";
@@ -126,6 +127,20 @@ export const sortImagesByNumericSuffix = (
     const numB = extractNumericSuffix(b.name);
     return numA - numB;
   });
+};
+
+export const refreshAlbumCache = async (kv: Deno.Kv): Promise<void> => {
+  const albums = await fetchAllAlbums();
+
+  const albumPhotosEntries = await Promise.all(
+    albums.map(async (album) => {
+      const photos = await fetchPhotosByAlbum(album.documentId);
+      return [album.slug, { album, photos }] as const;
+    }),
+  );
+
+  const albumPhotosMap = new Map(albumPhotosEntries);
+  await saveAllAlbumPhotos(kv, albumPhotosMap);
 };
 
 export const refreshCache = async (kv: Deno.Kv): Promise<void> => {
