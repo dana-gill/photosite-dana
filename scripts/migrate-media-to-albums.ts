@@ -143,7 +143,7 @@ const migrate = async (): Promise<void> => {
     const sorted = sortByNumericSuffix(groupFiles);
 
     try {
-      const albumDocumentId = await createAlbum(title, prefix);
+      const albumDocumentId = await createAlbum(title, slug);
       console.log(`✓ Album "${title}" (${prefix}) — documentId: ${albumDocumentId}`);
       albumsCreated++;
 
