@@ -78,18 +78,12 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
     };
   }, []);
 
-  const handleDelete = async (photoDocumentId: string) => {
-    const response = await fetch(
-      `/api/admin/albums/${albumDocumentId}/photos?photoDocumentId=${encodeURIComponent(photoDocumentId)}`,
-      { method: "DELETE" },
-    );
+  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>([]);
 
-    if (!response.ok) {
-      setError("Failed to delete photo. Please try again.");
-      return;
-    }
-
+  const handleDelete = (photoDocumentId: string) => {
+    setPendingDeletes((prev) => [...prev, photoDocumentId]);
     setItems((prev) => prev.filter((p) => p.documentId !== photoDocumentId));
+    setSaved(false);
   };
 
   const handleSave = async () => {
@@ -97,7 +91,22 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
     setError(null);
     setSaved(false);
 
-    const response = await fetch(
+    const deleteResults = await Promise.all(
+      pendingDeletes.map((photoDocumentId) =>
+        fetch(
+          `/api/admin/albums/${albumDocumentId}/photos?photoDocumentId=${encodeURIComponent(photoDocumentId)}`,
+          { method: "DELETE" },
+        )
+      ),
+    );
+
+    if (deleteResults.some((r) => !r.ok)) {
+      setSaving(false);
+      setError("Failed to delete one or more photos. Please try again.");
+      return;
+    }
+
+    const reorderResponse = await fetch(
       `/api/admin/albums/${albumDocumentId}/reorder`,
       {
         method: "POST",
@@ -110,11 +119,12 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
 
     setSaving(false);
 
-    if (!response.ok) {
+    if (!reorderResponse.ok) {
       setError("Failed to save order. Please try again.");
       return;
     }
 
+    setPendingDeletes([]);
     setSaved(true);
   };
 
@@ -156,7 +166,7 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
           disabled={saving || uploadingDisabled}
           class="px-4 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save order"}
+          {saving ? "Saving…" : "Save changes"}
         </button>
         {saved && <span class="text-sm text-green-600">Saved!</span>}
         {error && <span class="text-sm text-red-600">{error}</span>}
