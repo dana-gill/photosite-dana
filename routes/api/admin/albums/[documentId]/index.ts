@@ -4,7 +4,8 @@ import { deleteAlbum, updateAlbum } from "../../../../../services/album-service.
 import { refreshAlbumCache } from "../../../../../services/image-service.ts";
 
 interface UpdateAlbumBody {
-  readonly description: string;
+  readonly title?: string;
+  readonly description?: string;
 }
 
 export const handler = define.handlers({
@@ -22,7 +23,7 @@ export const handler = define.handlers({
     const { documentId } = ctx.params;
     const body: UpdateAlbumBody = await ctx.req.json();
 
-    const album = await updateAlbum(documentId, body.description ?? "");
+    const album = await updateAlbum(documentId, { title: body.title, description: body.description });
     await refreshAlbumCache(ctx.state.kv);
 
     return new Response(JSON.stringify({ data: album }), {

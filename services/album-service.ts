@@ -65,7 +65,10 @@ export const fetchPhotosByAlbum = async (albumDocumentId: string): Promise<Reado
   return data.data;
 };
 
-export const updateAlbum = async (documentId: string, description: string): Promise<StrapiAlbum> => {
+export const updateAlbum = async (
+  documentId: string,
+  fields: { title?: string; description?: string },
+): Promise<StrapiAlbum> => {
   const url = `${STRAPI_URL}api/albums/${documentId}`;
 
   const response = await fetch(url, {
@@ -74,7 +77,7 @@ export const updateAlbum = async (documentId: string, description: string): Prom
       "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ data: { description } }),
+    body: JSON.stringify({ data: fields }),
   });
 
   if (!response.ok) {

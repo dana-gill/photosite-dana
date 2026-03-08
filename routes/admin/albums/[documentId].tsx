@@ -3,7 +3,7 @@ import { Head } from "fresh/runtime";
 import { define } from "../../../utils.ts";
 import { fetchAllAlbums, fetchPhotosByAlbum } from "../../../services/album-service.ts";
 import AlbumPhotoSorter from "../../../islands/AlbumPhotoSorter.tsx";
-import EditAlbumDescription from "../../../islands/EditAlbumDescription.tsx";
+import EditAlbumFields from "../../../islands/EditAlbumFields.tsx";
 import PhotoUploader from "../../../islands/PhotoUploader.tsx";
 
 interface AlbumEditorData {
@@ -37,8 +37,11 @@ export default define.page<typeof handler>(function AlbumEditor({ data }) {
       </Head>
       <div class="mb-6">
         <a href="/admin" class="text-sm text-gray-500 hover:text-gray-900">← Albums</a>
-        <h1 class="text-2xl font-semibold text-gray-900 mt-2">{album.title}</h1>
-        <EditAlbumDescription documentId={album.documentId} initialDescription={album.description} />
+        <EditAlbumFields
+          documentId={album.documentId}
+          initialTitle={album.title}
+          initialDescription={album.description}
+        />
         <p class="text-sm text-gray-400 mt-1">slug: {album.slug}</p>
       </div>
       <div class="mb-4 flex items-center justify-between">
