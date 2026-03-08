@@ -87,14 +87,14 @@ export default function EditAlbumDescription(
   }
 
   return (
-    <div class="group flex items-start gap-2 mt-1">
+    <div class="flex items-start gap-2 mt-1">
       <p class="text-gray-500 text-sm">
         {savedDescription || <span class="italic text-gray-400">No description</span>}
       </p>
       <button
         type="button"
         onClick={handleEdit}
-        class="text-xs text-gray-400 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 shrink-0"
+        class="text-xs text-gray-400 hover:text-gray-700 mt-0.5 shrink-0"
       >
         Edit
       </button>
