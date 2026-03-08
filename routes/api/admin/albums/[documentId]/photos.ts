@@ -1,7 +1,6 @@
 import { define } from "../../../../../utils.ts";
 import { isAdminAuthorized } from "../../../../../services/admin-auth-service.ts";
 import { createPhoto, fetchPhotosByAlbum, uploadMediaFile } from "../../../../../services/album-service.ts";
-import { refreshAlbumCache } from "../../../../../services/image-service.ts";
 
 export const handler = define.handlers({
   POST: async (ctx) => {
@@ -39,8 +38,6 @@ export const handler = define.handlers({
       typeof caption === "string" ? caption : "",
       nextOrder,
     );
-
-    await refreshAlbumCache(ctx.state.kv);
 
     return new Response(JSON.stringify({ data: photo }), {
       status: 201,

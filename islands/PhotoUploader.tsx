@@ -18,6 +18,10 @@ const buildInitialState = (file: File): FileUploadState => ({
   errorMessage: null,
 });
 
+const refreshCache = async (): Promise<void> => {
+  await fetch("/api/admin/cache/refresh", { method: "POST" });
+};
+
 const uploadFile = async (albumDocumentId: string, file: File): Promise<void> => {
   const formData = new FormData();
   formData.append("file", file);
@@ -70,6 +74,7 @@ export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
       Promise.resolve(),
     );
 
+    await refreshCache();
     setIsUploading(false);
   };
 
