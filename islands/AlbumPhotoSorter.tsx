@@ -2,6 +2,9 @@ import type { StrapiPhoto } from "../types/album.ts";
 import Sortable from "sortablejs";
 import { useEffect, useRef, useState } from "preact/hooks";
 
+export const UPLOAD_START_EVENT = "photo-upload-start";
+export const UPLOAD_END_EVENT = "photo-upload-end";
+
 interface AlbumPhotoSorterProps {
   readonly albumDocumentId: string;
   readonly photos: ReadonlyArray<StrapiPhoto>;
@@ -17,6 +20,7 @@ interface SortablePhoto {
 
 export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhotoSorterProps) {
   const listRef = useRef<HTMLUListElement>(null);
+  const sortableRef = useRef<Sortable | null>(null);
   const [items, setItems] = useState<SortablePhoto[]>(
     photos.map((p) => ({
       documentId: p.documentId,
@@ -29,11 +33,12 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingDisabled, setUploadingDisabled] = useState(false);
 
   useEffect(() => {
     if (!listRef.current) return;
 
-    const sortableInstance = Sortable.create(listRef.current, {
+    sortableRef.current = Sortable.create(listRef.current, {
       animation: 150,
       onEnd: () => {
         if (!listRef.current) return;
@@ -49,7 +54,27 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
     });
 
     return () => {
-      sortableInstance.destroy();
+      sortableRef.current?.destroy();
+      sortableRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleUploadStart = () => {
+      setUploadingDisabled(true);
+      sortableRef.current?.option("disabled", true);
+    };
+    const handleUploadEnd = () => {
+      setUploadingDisabled(false);
+      sortableRef.current?.option("disabled", false);
+    };
+
+    globalThis.addEventListener(UPLOAD_START_EVENT, handleUploadStart);
+    globalThis.addEventListener(UPLOAD_END_EVENT, handleUploadEnd);
+
+    return () => {
+      globalThis.removeEventListener(UPLOAD_START_EVENT, handleUploadStart);
+      globalThis.removeEventListener(UPLOAD_END_EVENT, handleUploadEnd);
     };
   }, []);
 
@@ -86,7 +111,7 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
           <li
             key={photo.documentId}
             data-id={photo.documentId}
-            class="cursor-grab bg-white border border-gray-200 rounded overflow-hidden select-none"
+            class={`bg-white border border-gray-200 rounded overflow-hidden select-none ${uploadingDisabled ? "cursor-not-allowed opacity-50" : "cursor-grab"}`}
           >
             <img
               src={photo.imageUrl}
@@ -105,7 +130,7 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || uploadingDisabled}
           class="px-4 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save order"}

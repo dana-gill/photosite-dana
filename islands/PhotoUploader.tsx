@@ -1,4 +1,5 @@
 import { useState } from "preact/hooks";
+import { UPLOAD_END_EVENT, UPLOAD_START_EVENT } from "./AlbumPhotoSorter.tsx";
 
 interface PhotoUploaderProps {
   readonly albumDocumentId: string;
@@ -58,6 +59,7 @@ export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
   const handleUpload = async () => {
     if (uploads.length === 0 || isUploading) return;
     setIsUploading(true);
+    globalThis.dispatchEvent(new CustomEvent(UPLOAD_START_EVENT));
 
     await uploads.reduce<Promise<void>>(
       async (chain, upload, index) => {
@@ -76,6 +78,7 @@ export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
 
     await refreshCache();
     setIsUploading(false);
+    globalThis.dispatchEvent(new CustomEvent(UPLOAD_END_EVENT));
   };
 
   const allDone = uploads.length > 0 && uploads.every((u) => u.status === "done");
