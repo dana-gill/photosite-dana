@@ -130,6 +130,24 @@ export const createAlbum = async (title: string, slug: string, description: stri
   return data.data;
 };
 
+export const deletePhoto = async (documentId: string): Promise<void> => {
+  const url = `${STRAPI_URL}api/photos/${documentId}`;
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`Strapi API error (${response.status}):`, errorText);
+    throw new Error(`Failed to delete photo from Strapi: ${response.statusText}`);
+  }
+};
+
 export const createPhoto = async (
   albumDocumentId: string,
   imageId: number,

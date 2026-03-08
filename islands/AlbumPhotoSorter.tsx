@@ -78,6 +78,20 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
     };
   }, []);
 
+  const handleDelete = async (photoDocumentId: string) => {
+    const response = await fetch(
+      `/api/admin/albums/${albumDocumentId}/photos?photoDocumentId=${encodeURIComponent(photoDocumentId)}`,
+      { method: "DELETE" },
+    );
+
+    if (!response.ok) {
+      setError("Failed to delete photo. Please try again.");
+      return;
+    }
+
+    setItems((prev) => prev.filter((p) => p.documentId !== photoDocumentId));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError(null);
@@ -111,7 +125,7 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
           <li
             key={photo.documentId}
             data-id={photo.documentId}
-            class={`bg-white border border-gray-200 rounded overflow-hidden select-none ${uploadingDisabled ? "cursor-not-allowed opacity-50" : "cursor-grab"}`}
+            class={`relative bg-white border border-gray-200 rounded overflow-hidden select-none ${uploadingDisabled ? "cursor-not-allowed opacity-50" : "cursor-grab"}`}
           >
             <img
               src={photo.imageUrl}
@@ -123,6 +137,15 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
                 {photo.altTitle ?? photo.caption}
               </p>
             )}
+            <button
+              type="button"
+              onClick={() => handleDelete(photo.documentId)}
+              disabled={uploadingDisabled}
+              class="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/50 hover:bg-black/70 text-white text-xs rounded disabled:opacity-50"
+              aria-label="Delete photo"
+            >
+              ×
+            </button>
           </li>
         ))}
       </ul>
