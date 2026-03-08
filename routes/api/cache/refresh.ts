@@ -1,5 +1,5 @@
-import { clearCache, getCacheMetadata } from "../../../services/cache-manager.ts";
-import { refreshCache } from "../../../services/image-service.ts";
+import { clearAlbumCache, clearCache, getCacheMetadata } from "../../../services/cache-manager.ts";
+import { refreshAlbumCache, refreshCache } from "../../../services/image-service.ts";
 import { define } from "../../../utils.ts";
 
 const PHOTOSITE_TOKEN = Deno.env.get("PHOTOSITE_TOKEN") ?? "";
@@ -19,10 +19,10 @@ export const handler = define.handlers({
     try {
       const kv = ctx.state.kv;
 
-      await clearCache(kv);
+      await Promise.all([clearCache(kv), clearAlbumCache(kv)]);
       console.log("Cache cleared successfully");
 
-      await refreshCache(kv);
+      await Promise.all([refreshCache(kv), refreshAlbumCache(kv)]);
       console.log("Cache refreshed successfully");
 
       const metadata = await getCacheMetadata(kv);

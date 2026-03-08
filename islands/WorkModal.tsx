@@ -66,7 +66,7 @@ export default function WorkModal(
 
   return (
     <div
-      class={`fixed inset-0 bg-gray-50 z-[100] flex items-center justify-center transition-opacity duration-300 ${
+      class={`fixed inset-0 bg-gray-50 z-[100] overflow-y-auto transition-opacity duration-300 ${
         isClosing || isOpening ? "opacity-0" : "opacity-100"
       }`}
       onMouseMove={handleMouseMove}
@@ -74,12 +74,12 @@ export default function WorkModal(
       <button
         type="button"
         onClick={handleClose}
-        class="absolute top-8 left-8 text-4xl text-gray-900 bg-transparent border-none cursor-pointer p-0 hover:opacity-70 transition-opacity"
+        class="fixed top-8 left-8 text-4xl text-gray-900 bg-transparent border-none cursor-pointer p-0 hover:opacity-70 transition-opacity z-[102]"
       >
         ×
       </button>
       <ul
-        class={`flex flex-col gap-8 items-center transition-all duration-300 ${
+        class={`flex flex-col gap-8 items-center justify-center min-h-screen py-16 transition-all duration-300 ${
           isClosing || isOpening
             ? "opacity-0 translate-y-4"
             : "opacity-100 translate-y-0"
