@@ -65,6 +65,28 @@ export const fetchPhotosByAlbum = async (albumDocumentId: string): Promise<Reado
   return data.data;
 };
 
+export const updateAlbum = async (documentId: string, description: string): Promise<StrapiAlbum> => {
+  const url = `${STRAPI_URL}api/albums/${documentId}`;
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ data: { description } }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`Strapi API error (${response.status}):`, errorText);
+    throw new Error(`Failed to update album in Strapi: ${response.statusText}`);
+  }
+
+  const data: StrapiAlbumSingleResponse = await response.json();
+  return data.data;
+};
+
 export const deleteAlbum = async (documentId: string): Promise<void> => {
   const url = `${STRAPI_URL}api/albums/${documentId}`;
 
