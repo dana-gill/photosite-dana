@@ -1,4 +1,5 @@
 import type { StrapiPhoto } from "../types/album.ts";
+import Sortable from "sortablejs";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 interface AlbumPhotoSorterProps {
@@ -32,29 +33,23 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
   useEffect(() => {
     if (!listRef.current) return;
 
-    // deno-lint-ignore no-explicit-any
-    let sortableInstance: any = null;
-
-    import("https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js").then((mod) => {
-      const Sortable = mod.default ?? mod;
-      sortableInstance = Sortable.create(listRef.current, {
-        animation: 150,
-        onEnd: () => {
-          if (!listRef.current) return;
-          const nodes = Array.from(listRef.current.querySelectorAll("[data-id]"));
-          setItems((prev) =>
-            nodes.map((node, index) => {
-              const docId = node.getAttribute("data-id") ?? "";
-              const found = prev.find((p) => p.documentId === docId);
-              return { ...(found ?? prev[index]), order: index };
-            })
-          );
-        },
-      });
+    const sortableInstance = Sortable.create(listRef.current, {
+      animation: 150,
+      onEnd: () => {
+        if (!listRef.current) return;
+        const nodes = Array.from(listRef.current.querySelectorAll("[data-id]"));
+        setItems((prev) =>
+          nodes.map((node, index) => {
+            const docId = node.getAttribute("data-id") ?? "";
+            const found = prev.find((p) => p.documentId === docId);
+            return { ...(found ?? prev[index]), order: index };
+          })
+        );
+      },
     });
 
     return () => {
-      sortableInstance?.destroy();
+      sortableInstance.destroy();
     };
   }, []);
 
