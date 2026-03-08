@@ -79,7 +79,7 @@ export default function WorkModal(
         ×
       </button>
       <ul
-        class={`flex flex-col gap-8 items-center transition-all duration-300 ${
+        class={`flex flex-col gap-8 items-center overflow-y-auto max-h-screen py-16 transition-all duration-300 ${
           isClosing || isOpening
             ? "opacity-0 translate-y-4"
             : "opacity-100 translate-y-0"
