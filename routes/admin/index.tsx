@@ -3,6 +3,7 @@ import { define } from "../../utils.ts";
 import { fetchAllAlbums } from "../../services/album-service.ts";
 import { getPhotosByAlbumSlug } from "../../services/cache-manager.ts";
 import CreateAlbumForm from "../../islands/CreateAlbumForm.tsx";
+import DeleteAlbumButton from "../../islands/DeleteAlbumButton.tsx";
 
 interface AlbumRow {
   readonly documentId: string;
@@ -55,7 +56,10 @@ export default define.page<typeof handler>(function AdminIndex({ data }) {
               </a>
               <span class="ml-2 text-sm text-gray-500">/{row.slug}</span>
             </div>
-            <span class="text-sm text-gray-500">{row.photoCount} photos</span>
+            <div class="flex items-center gap-4">
+              <span class="text-sm text-gray-500">{row.photoCount} photos</span>
+              <DeleteAlbumButton documentId={row.documentId} title={row.title} />
+            </div>
           </li>
         ))}
       </ul>
