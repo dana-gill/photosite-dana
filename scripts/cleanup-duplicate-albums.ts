@@ -4,7 +4,7 @@ import { load } from "jsr:@std/dotenv";
 
 await load({ export: true });
 
-const STRAPI_API_TOKEN = Deno.env.get("STRAPI_API_TOKEN") ?? "";
+const STRAPI_API_TOKEN = Deno.env.get("STRAPI_API_FULL_ADMIN") ?? "";
 const STRAPI_URL = Deno.env.get("STRAPI_URL") ?? "";
 
 if (!STRAPI_API_TOKEN || !STRAPI_URL) {
