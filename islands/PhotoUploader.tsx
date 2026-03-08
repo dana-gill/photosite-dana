@@ -61,6 +61,8 @@ export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
     setIsUploading(true);
     globalThis.dispatchEvent(new CustomEvent(UPLOAD_START_EVENT));
 
+    const finalStatuses: UploadStatus[] = [];
+
     await uploads.reduce<Promise<void>>(
       async (chain, upload, index) => {
         await chain;
@@ -68,9 +70,11 @@ export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
         try {
           await uploadFile(albumDocumentId, upload.file);
           setFileStatus(index, "done", null);
+          finalStatuses.push("done");
         } catch (err) {
           const message = err instanceof Error ? err.message : "Upload failed";
           setFileStatus(index, "error", message);
+          finalStatuses.push("error");
         }
       },
       Promise.resolve(),
@@ -79,9 +83,11 @@ export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
     await refreshCache();
     setIsUploading(false);
     globalThis.dispatchEvent(new CustomEvent(UPLOAD_END_EVENT));
-  };
 
-  const allDone = uploads.length > 0 && uploads.every((u) => u.status === "done");
+    if (finalStatuses.some((s) => s === "done")) {
+      globalThis.location.reload();
+    }
+  };
 
   return (
     <div class="bg-white border border-gray-200 rounded p-6 mt-8">
@@ -131,14 +137,11 @@ export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
           <button
             type="button"
             onClick={handleUpload}
-            disabled={uploads.length === 0 || isUploading || allDone}
+            disabled={uploads.length === 0 || isUploading}
             class="px-4 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50"
           >
             {isUploading ? "Uploading…" : "Upload"}
           </button>
-          {allDone && (
-            <span class="text-sm text-green-600">All photos uploaded. Refresh the page to see them.</span>
-          )}
         </div>
       </div>
     </div>
