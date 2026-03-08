@@ -1,14 +1,18 @@
 import { define } from "../utils.ts";
-import { getAllImages } from "../services/cache-manager.ts";
+import { getAllImages, getCarouselEntries } from "../services/cache-manager.ts";
 import CarouselWrapper from "../islands/CarouselWrapper.tsx";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const allImages = await getAllImages(ctx.state.kv);
-    const previewImages = allImages
-      .filter((image) => image.name.includes("--preview"))
-      .slice(0, 10);
-    return { data: previewImages };
+    const [carouselEntries, allImages] = await Promise.all([
+      getCarouselEntries(ctx.state.kv),
+      getAllImages(ctx.state.kv),
+    ]);
+    const imageMap = new Map(allImages.map((image) => [image.id, image]));
+    const carouselImages = carouselEntries
+      .map((entry) => imageMap.get(entry.imageId))
+      .filter((image) => image !== undefined);
+    return { data: carouselImages };
   },
 });
 
