@@ -6,6 +6,7 @@ import type {
   StrapiImage,
 } from "../types/strapi.ts";
 import type { StrapiAlbum, StrapiPhoto } from "../types/album.ts";
+import type { CarouselEntry } from "../types/carousel.ts";
 
 export const clearAlbumCache = async (kv: Deno.Kv): Promise<void> => {
   const albumEntries = kv.list({ prefix: ["album"] });
@@ -90,6 +91,13 @@ export const getCacheMetadata = async (
 ): Promise<CacheMetadata | null> => {
   const result = await kv.get<CacheMetadata>(["cache", "metadata"]);
   return result.value;
+};
+
+export const getCarouselEntries = async (
+  kv: Deno.Kv,
+): Promise<ReadonlyArray<CarouselEntry>> => {
+  const result = await kv.get<ReadonlyArray<CarouselEntry>>(["carousel"]);
+  return result.value ?? [];
 };
 
 export const getAllImages = async (
@@ -184,6 +192,13 @@ export const saveCacheMetadata = async (
   metadata: CacheMetadata,
 ): Promise<void> => {
   await kv.set(["cache", "metadata"], metadata);
+};
+
+export const saveCarouselEntries = async (
+  kv: Deno.Kv,
+  entries: ReadonlyArray<CarouselEntry>,
+): Promise<void> => {
+  await kv.set(["carousel"], entries);
 };
 
 export const saveToCache = async (
