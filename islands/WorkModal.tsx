@@ -74,7 +74,7 @@ export default function WorkModal(
       <button
         type="button"
         onClick={handleClose}
-        class="fixed top-8 left-8 text-4xl text-gray-900 bg-transparent border-none cursor-pointer p-0 hover:opacity-70 transition-opacity"
+        class="fixed top-8 left-8 text-4xl text-gray-900 bg-transparent border-none cursor-pointer p-0 hover:opacity-70 transition-opacity z-[102]"
       >
         ×
       </button>
