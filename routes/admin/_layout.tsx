@@ -1,4 +1,7 @@
 import { define } from "../../utils.ts";
+import type { RouteConfig } from "fresh";
+
+export const config: RouteConfig = { skipAppWrapper: true };
 
 export default define.page(function AdminLayout({ Component }) {
   return (
