@@ -2,6 +2,7 @@ import { Head } from "fresh/runtime";
 import { define } from "../../utils.ts";
 import { fetchAllAlbums } from "../../services/album-service.ts";
 import { getPhotosByAlbumSlug } from "../../services/cache-manager.ts";
+import CreateAlbumForm from "../../islands/CreateAlbumForm.tsx";
 
 interface AlbumRow {
   readonly documentId: string;
@@ -58,6 +59,7 @@ export default define.page<typeof handler>(function AdminIndex({ data }) {
           </li>
         ))}
       </ul>
+      <CreateAlbumForm />
     </div>
   );
 });

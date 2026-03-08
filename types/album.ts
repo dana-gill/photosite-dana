@@ -45,3 +45,11 @@ export interface StrapiPhotoResponse {
     };
   };
 }
+
+export interface StrapiAlbumSingleResponse {
+  readonly data: StrapiAlbum;
+}
+
+export interface StrapiPhotoSingleResponse {
+  readonly data: StrapiPhoto;
+}

@@ -1,6 +1,8 @@
-import type { StrapiAlbum, StrapiAlbumResponse, StrapiPhoto, StrapiPhotoResponse } from "../types/album.ts";
+import type { StrapiAlbum, StrapiAlbumResponse, StrapiAlbumSingleResponse, StrapiPhoto, StrapiPhotoResponse, StrapiPhotoSingleResponse } from "../types/album.ts";
+import type { StrapiImage } from "../types/strapi.ts";
 
 const STRAPI_API_TOKEN = Deno.env.get("STRAPI_API_TOKEN") ?? "";
+const STRAPI_API_FULL_ADMIN = Deno.env.get("STRAPI_API_FULL_ADMIN") ?? "";
 const STRAPI_URL = Deno.env.get("STRAPI_URL") ?? "";
 
 export const fetchAlbumBySlug = async (slug: string): Promise<StrapiAlbum | null> => {
@@ -61,4 +63,82 @@ export const fetchPhotosByAlbum = async (albumDocumentId: string): Promise<Reado
 
   const data: StrapiPhotoResponse = await response.json();
   return data.data;
+};
+
+export const createAlbum = async (title: string, slug: string, description: string): Promise<StrapiAlbum> => {
+  const url = `${STRAPI_URL}api/albums`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ data: { title, slug, description } }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`Strapi API error (${response.status}):`, errorText);
+    throw new Error(`Failed to create album in Strapi: ${response.statusText}`);
+  }
+
+  const data: StrapiAlbumSingleResponse = await response.json();
+  return data.data;
+};
+
+export const createPhoto = async (
+  albumDocumentId: string,
+  imageId: number,
+  altTitle: string,
+  caption: string,
+  order: number,
+): Promise<StrapiPhoto> => {
+  const url = `${STRAPI_URL}api/photos`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ data: { album: albumDocumentId, image: imageId, altTitle, caption, order } }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`Strapi API error (${response.status}):`, errorText);
+    throw new Error(`Failed to create photo in Strapi: ${response.statusText}`);
+  }
+
+  const data: StrapiPhotoSingleResponse = await response.json();
+  return data.data;
+};
+
+export const uploadMediaFile = async (file: File): Promise<StrapiImage> => {
+  const url = `${STRAPI_URL}api/upload`;
+
+  const formData = new FormData();
+  formData.append("files", file);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`Strapi API error (${response.status}):`, errorText);
+    throw new Error(`Failed to upload file to Strapi: ${response.statusText}`);
+  }
+
+  const data: ReadonlyArray<StrapiImage> = await response.json();
+  const uploaded = data[0];
+  if (!uploaded) {
+    throw new Error("Strapi upload returned no files");
+  }
+  return uploaded;
 };

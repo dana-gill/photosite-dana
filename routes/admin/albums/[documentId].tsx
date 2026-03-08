@@ -3,6 +3,7 @@ import { Head } from "fresh/runtime";
 import { define } from "../../../utils.ts";
 import { fetchAllAlbums, fetchPhotosByAlbum } from "../../../services/album-service.ts";
 import AlbumPhotoSorter from "../../../islands/AlbumPhotoSorter.tsx";
+import PhotoUploader from "../../../islands/PhotoUploader.tsx";
 
 interface AlbumEditorData {
   readonly album: StrapiAlbum;
@@ -46,6 +47,7 @@ export default define.page<typeof handler>(function AlbumEditor({ data }) {
         <p class="text-sm text-gray-500">Drag to reorder, then save.</p>
       </div>
       <AlbumPhotoSorter albumDocumentId={album.documentId} photos={photos} />
+      <PhotoUploader albumDocumentId={album.documentId} />
     </div>
   );
 });
