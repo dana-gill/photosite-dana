@@ -40,7 +40,10 @@ export default define.page<typeof handler>(function AdminIndex({ data }) {
       <Head>
         <title>Admin - Dana Gill Photography</title>
       </Head>
-      <h1 class="text-2xl font-semibold text-gray-900 mb-6">Albums</h1>
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-semibold text-gray-900">Albums</h1>
+        <a href="/admin/carousel" class="text-sm text-gray-500 hover:text-gray-900">Carousel Editor →</a>
+      </div>
       {rows.length === 0 && (
         <p class="text-gray-500">No albums found. Create one in Strapi first.</p>
       )}
