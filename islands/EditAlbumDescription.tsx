@@ -94,7 +94,7 @@ export default function EditAlbumDescription(
       <button
         type="button"
         onClick={handleEdit}
-        class="text-xs text-gray-400 hover:text-gray-700 mt-0.5 shrink-0"
+        class="text-xs text-gray-600 hover:text-gray-900 mt-0.5 shrink-0"
       >
         Edit
       </button>
