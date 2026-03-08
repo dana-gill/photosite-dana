@@ -21,7 +21,8 @@ console.log("Checking cache status...");
 
 try {
   const metadata = await getCacheMetadata(kv);
-  const hasValidMetadata = metadata && metadata.albumCount > 0 && metadata.totalImages > 0;
+  const slugs = await getAllAlbumSlugs(kv);
+  const hasValidMetadata = metadata && metadata.albumCount > 0 && metadata.totalImages > 0 && slugs.length > 0;
   const shouldRefresh = !hasValidMetadata;
 
   if (shouldRefresh) {
@@ -78,14 +79,14 @@ const fetchWorkPreviews = async (
   return previews.filter((p): p is WorkPreview => p !== null);
 };
 
-// Initialize work data once on startup
-const workLinks = await fetchWorkLinks(kv);
-const workPreviews = await fetchWorkPreviews(kv);
-
 app.use(staticFiles());
 
 // Inject KV and work data into all requests via state
 app.use(async (ctx) => {
+  const [workLinks, workPreviews] = await Promise.all([
+    fetchWorkLinks(kv),
+    fetchWorkPreviews(kv),
+  ]);
   ctx.state.shared = "hello";
   ctx.state.kv = kv;
   ctx.state.workLinks = workLinks;
