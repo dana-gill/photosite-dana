@@ -81,7 +81,7 @@ const renderPagination = (
         class="px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Previous page"
       >
-        ←
+        ‹
       </button>
       <span>{libraryPage + 1} / {totalPages}</span>
       <button
@@ -91,7 +91,7 @@ const renderPagination = (
         class="px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Next page"
       >
-        →
+        ›
       </button>
     </div>
   );
@@ -148,14 +148,6 @@ export default function CarouselEditor(
     setSaved(false);
   };
 
-  const handleNextPage = () => {
-    setLibraryPage((prev) => Math.min(totalPages - 1, prev + 1));
-  };
-
-  const handlePrevPage = () => {
-    setLibraryPage((prev) => Math.max(0, prev - 1));
-  };
-
   const handleRemove = (imageId: number) => {
     setItems((prev) => prev.filter((item) => item.imageId !== imageId));
     setSaved(false);
@@ -190,6 +182,14 @@ export default function CarouselEditor(
     libraryPage * CAROUSEL_LIBRARY_PAGE_SIZE,
     (libraryPage + 1) * CAROUSEL_LIBRARY_PAGE_SIZE,
   );
+
+  const handleNextPage = () => {
+    setLibraryPage((prev) => Math.min(totalPages - 1, prev + 1));
+  };
+
+  const handlePrevPage = () => {
+    setLibraryPage((prev) => Math.max(0, prev - 1));
+  };
 
   return (
     <div class="space-y-8">
