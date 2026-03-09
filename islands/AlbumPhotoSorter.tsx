@@ -1,9 +1,9 @@
 import type { StrapiPhoto } from "../types/album.ts";
 import Sortable from "sortablejs";
 import { useEffect, useRef, useState } from "preact/hooks";
+import { UPLOAD_END_EVENT, UPLOAD_START_EVENT } from "./consts.ts";
 
-export const UPLOAD_START_EVENT = "photo-upload-start";
-export const UPLOAD_END_EVENT = "photo-upload-end";
+export { UPLOAD_END_EVENT, UPLOAD_START_EVENT };
 
 interface AlbumPhotoSorterProps {
   readonly albumDocumentId: string;
@@ -18,7 +18,9 @@ interface SortablePhoto {
   order: number;
 }
 
-export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhotoSorterProps) {
+export default function AlbumPhotoSorter(
+  { albumDocumentId, photos }: AlbumPhotoSorterProps,
+) {
   const listRef = useRef<HTMLUListElement>(null);
   const sortableRef = useRef<Sortable | null>(null);
   const [items, setItems] = useState<SortablePhoto[]>(
@@ -78,7 +80,9 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
     };
   }, []);
 
-  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>([]);
+  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>(
+    [],
+  );
 
   const handleDelete = (photoDocumentId: string) => {
     setPendingDeletes((prev) => [...prev, photoDocumentId]);
@@ -94,7 +98,9 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
     const deleteResults = await Promise.all(
       pendingDeletes.map((photoDocumentId) =>
         fetch(
-          `/api/admin/albums/${albumDocumentId}/photos?photoDocumentId=${encodeURIComponent(photoDocumentId)}`,
+          `/api/admin/albums/${albumDocumentId}/photos?photoDocumentId=${
+            encodeURIComponent(photoDocumentId)
+          }`,
           { method: "DELETE" },
         )
       ),
@@ -112,7 +118,10 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          photos: items.map((p) => ({ documentId: p.documentId, order: p.order })),
+          photos: items.map((p) => ({
+            documentId: p.documentId,
+            order: p.order,
+          })),
         }),
       },
     );
@@ -130,12 +139,19 @@ export default function AlbumPhotoSorter({ albumDocumentId, photos }: AlbumPhoto
 
   return (
     <div>
-      <ul ref={listRef} class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
+      <ul
+        ref={listRef}
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6"
+      >
         {items.map((photo) => (
           <li
             key={photo.documentId}
             data-id={photo.documentId}
-            class={`relative bg-white border border-gray-200 rounded overflow-hidden select-none ${uploadingDisabled ? "cursor-not-allowed opacity-50" : "cursor-grab"}`}
+            class={`relative bg-white border border-gray-200 rounded overflow-hidden select-none ${
+              uploadingDisabled
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-grab"
+            }`}
           >
             <img
               src={photo.imageUrl}

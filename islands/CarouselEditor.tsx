@@ -2,8 +2,7 @@ import Sortable from "sortablejs";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { CarouselEntry } from "../types/carousel.ts";
 import type { StrapiImage } from "../types/strapi.ts";
-
-const PAGE_SIZE = 10;
+import { CAROUSEL_LIBRARY_PAGE_SIZE } from "./consts.ts";
 
 interface CarouselEditorProps {
   readonly allImages: ReadonlyArray<StrapiImage>;
@@ -186,10 +185,10 @@ export default function CarouselEditor(
   };
 
   const carouselIds = new Set(items.map((item) => item.imageId));
-  const totalPages = Math.ceil(allImages.length / PAGE_SIZE);
+  const totalPages = Math.ceil(allImages.length / CAROUSEL_LIBRARY_PAGE_SIZE);
   const pageImages = allImages.slice(
-    libraryPage * PAGE_SIZE,
-    (libraryPage + 1) * PAGE_SIZE,
+    libraryPage * CAROUSEL_LIBRARY_PAGE_SIZE,
+    (libraryPage + 1) * CAROUSEL_LIBRARY_PAGE_SIZE,
   );
 
   return (
