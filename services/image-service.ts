@@ -60,10 +60,12 @@ const normalizeImageUrl = (image: StrapiImage): StrapiImage => {
   };
 };
 
-export const fetchAllImagesFromStrapi = async (): Promise<
-  ReadonlyArray<StrapiImage>
-> => {
-  const url = `${STRAPI_URL}api/upload/files`;
+const fetchImagesPage = async (
+  page: number,
+  pageSize: number,
+): Promise<ReadonlyArray<StrapiImage>> => {
+  const url =
+    `${STRAPI_URL}api/upload/files?pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
 
   const response = await fetch(url, {
     headers: {
@@ -72,9 +74,7 @@ export const fetchAllImagesFromStrapi = async (): Promise<
     },
   });
 
-  const isSuccess = response.ok;
-
-  if (!isSuccess) {
+  if (!response.ok) {
     const errorText = await response.text();
     console.error(`Strapi API error (${response.status}):`, errorText);
     throw new Error(
@@ -96,8 +96,24 @@ export const fetchAllImagesFromStrapi = async (): Promise<
     );
   }
 
-  const normalizedImages = data.map(normalizeImageUrl);
-  return normalizedImages;
+  return data.map(normalizeImageUrl);
+};
+
+export const fetchAllImagesFromStrapi = async (): Promise<
+  ReadonlyArray<StrapiImage>
+> => {
+  const PAGE_SIZE = 100;
+  const allImages: StrapiImage[] = [];
+  let page = 1;
+
+  while (true) {
+    const images = await fetchImagesPage(page, PAGE_SIZE);
+    allImages.push(...images);
+    if (images.length < PAGE_SIZE) break;
+    page++;
+  }
+
+  return allImages;
 };
 
 export const groupImagesByAlbum = (
