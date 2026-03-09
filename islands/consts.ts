@@ -1,6 +1,6 @@
 import type { NavLink } from "../types/nav.ts";
 
-export const CAROUSEL_LIBRARY_PAGE_SIZE = 10;
+export const CAROUSEL_LIBRARY_PAGE_SIZE = 20;
 
 export const NAV_LINKS: ReadonlyArray<NavLink> = [
   { href: "/about", label: "About" },
