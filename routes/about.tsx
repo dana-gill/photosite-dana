@@ -1,21 +1,22 @@
-import type { StrapiImage } from "../types/strapi.ts";
+import type { SanityPhoto } from "../types/sanity.ts";
 import { Head } from "fresh/runtime";
 import { Image } from "../components/Image.tsx";
 import { define } from "../utils.ts";
-import { getImagesByAlbum } from "../services/cache-manager.ts";
+import { getAlbumBySlug, getPhotosByAlbumSlug } from "../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const images = await getImagesByAlbum(ctx.state.kv, "about") ?? [];
-    const aboutImage = images.find((img: StrapiImage) =>
-      img.name.includes("about_1")
-    );
-    return { data: aboutImage ?? null };
+    const album = await getAlbumBySlug(ctx.state.kv, "about");
+    if (!album) return { data: null };
+
+    const photos = await getPhotosByAlbumSlug(ctx.state.kv, "about");
+    const aboutPhoto = photos?.[0] ?? null;
+    return { data: aboutPhoto };
   },
 });
 
 export default define.page<typeof handler>(function About({ data }) {
-  const aboutImage = data;
+  const aboutPhoto: SanityPhoto | null = data;
 
   return (
     <div class="px-4 py-8 mx-auto md:min-h-screen bg-gray-50">
@@ -45,15 +46,14 @@ export default define.page<typeof handler>(function About({ data }) {
         />
       </Head>
       <div class="max-w-4xl mx-auto pt-20 flex flex-col md:flex-row gap-8">
-        {aboutImage && (
+        {aboutPhoto && (
           <div class="flex justify-flex-start fade-in-title">
             <div class="max-w-[1000px] max-h-[2000px]">
               <Image
-                alt={aboutImage.alternativeText ?? aboutImage.name}
-                formats={aboutImage.formats}
-                height={aboutImage.height}
-                src={aboutImage.url}
-                width={aboutImage.width}
+                alt={aboutPhoto.altTitle ?? aboutPhoto.caption ?? "About"}
+                height={aboutPhoto.image.asset.metadata.dimensions.height}
+                src={aboutPhoto.image.asset.url}
+                width={aboutPhoto.image.asset.metadata.dimensions.width}
               />
             </div>
           </div>

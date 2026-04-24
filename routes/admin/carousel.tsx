@@ -1,28 +1,31 @@
 import { Head } from "fresh/runtime";
 import { define } from "../../utils.ts";
 import { getCarouselEntries } from "../../services/cache-manager.ts";
-import { fetchAllImagesFromStrapi } from "../../services/image-service.ts";
+import { fetchAllAlbums, fetchPhotosByAlbum } from "../../services/album-service.ts";
 import CarouselEditor from "../../islands/CarouselEditor.tsx";
-import type { CarouselEntry } from "../../types/carousel.ts";
-import type { StrapiImage } from "../../types/strapi.ts";
+import type { CarouselEntry, SanityPhoto } from "../../types/sanity.ts";
 
 interface CarouselPageData {
-  readonly allImages: ReadonlyArray<StrapiImage>;
+  readonly allPhotos: ReadonlyArray<SanityPhoto>;
   readonly initialEntries: ReadonlyArray<CarouselEntry>;
 }
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const [allImages, initialEntries] = await Promise.all([
-      fetchAllImagesFromStrapi(),
+    const [albums, initialEntries] = await Promise.all([
+      fetchAllAlbums(),
       getCarouselEntries(ctx.state.kv),
     ]);
-    return { data: { allImages, initialEntries } satisfies CarouselPageData };
+
+    const photoArrays = await Promise.all(albums.map((a) => fetchPhotosByAlbum(a._id)));
+    const allPhotos = photoArrays.flat();
+
+    return { data: { allPhotos, initialEntries } satisfies CarouselPageData };
   },
 });
 
 export default define.page<typeof handler>(function CarouselPage({ data }) {
-  const { allImages, initialEntries } = data;
+  const { allPhotos, initialEntries } = data;
 
   return (
     <div>
@@ -34,7 +37,7 @@ export default define.page<typeof handler>(function CarouselPage({ data }) {
         <h1 class="text-2xl font-semibold text-gray-900 mt-2">Carousel Editor</h1>
         <p class="text-sm text-gray-500 mt-1">Drag to reorder, then save.</p>
       </div>
-      <CarouselEditor allImages={allImages} initialEntries={initialEntries} />
+      <CarouselEditor allPhotos={allPhotos} initialEntries={initialEntries} />
     </div>
   );
 });
