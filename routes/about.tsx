@@ -54,9 +54,9 @@ export default define.page<typeof handler>(function About({ data }) {
             <div class="max-w-[1000px] max-h-[2000px]">
               <Image
                 alt={aboutPhoto.altTitle ?? aboutPhoto.caption ?? "About"}
-                height={aboutPhoto.image.asset.metadata.dimensions.height}
+                height={aboutPhoto.image.asset.metadata?.dimensions.height ?? 0}
                 src={aboutPhoto.image.asset.url}
-                width={aboutPhoto.image.asset.metadata.dimensions.width}
+                width={aboutPhoto.image.asset.metadata?.dimensions.width ?? 0}
               />
             </div>
           </div>

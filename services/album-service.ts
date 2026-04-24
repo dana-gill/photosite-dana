@@ -124,6 +124,17 @@ export const fetchPhotoById = async (_id: string): Promise<SanityPhoto> => {
   return doc;
 };
 
+export const fetchCarouselPhotoIds = async (): Promise<
+  ReadonlyArray<string>
+> => {
+  const doc = await client.fetch<{
+    images: ReadonlyArray<{ _ref: string }> | null;
+  } | null>(
+    `*[_type == "carousel"][0]{ "images": images[]{ _ref } }`,
+  );
+  return doc?.images?.map((img) => img._ref) ?? [];
+};
+
 export const fetchPhotosByAlbum = async (
   albumId: string,
 ): Promise<ReadonlyArray<SanityPhoto>> => {

@@ -45,9 +45,9 @@ export default define.page<typeof handler>(function AlbumPage({ data }) {
             >
               <Image
                 alt={photo.altTitle ?? photo.caption ?? photo.image.asset._id}
-                height={photo.image.asset.metadata.dimensions.height}
+                height={photo.image.asset.metadata?.dimensions.height ?? 0}
                 src={photo.image.asset.url}
-                width={photo.image.asset.metadata.dimensions.width}
+                width={photo.image.asset.metadata?.dimensions.width ?? 0}
               />
               {photo.caption && (
                 <div class="p-4">

@@ -12,7 +12,7 @@ export interface SanityImageMetadata {
 export interface SanityImageAsset {
   readonly _id: string;
   readonly url: string;
-  readonly metadata: SanityImageMetadata;
+  readonly metadata: SanityImageMetadata | undefined;
 }
 
 export interface SanityImageField {

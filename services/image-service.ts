@@ -1,10 +1,21 @@
-import { fetchAllAlbums, fetchPhotosByAlbum } from "./album-service.ts";
-import { clearAlbumCache, saveAllAlbumPhotos } from "./cache-manager.ts";
+import {
+  fetchAllAlbums,
+  fetchCarouselPhotoIds,
+  fetchPhotosByAlbum,
+} from "./album-service.ts";
+import {
+  clearAlbumCache,
+  saveAllAlbumPhotos,
+  saveCarouselEntries,
+} from "./cache-manager.ts";
 
 export const refreshAlbumCache = async (kv: Deno.Kv): Promise<void> => {
   await clearAlbumCache(kv);
 
-  const albums = await fetchAllAlbums();
+  const [albums, carouselPhotoIds] = await Promise.all([
+    fetchAllAlbums(),
+    fetchCarouselPhotoIds(),
+  ]);
 
   const albumPhotosEntries = await Promise.all(
     albums.map(async (album) => {
@@ -14,5 +25,12 @@ export const refreshAlbumCache = async (kv: Deno.Kv): Promise<void> => {
   );
 
   const albumPhotosMap = new Map(albumPhotosEntries);
-  await saveAllAlbumPhotos(kv, albumPhotosMap);
+
+  await Promise.all([
+    saveAllAlbumPhotos(kv, albumPhotosMap),
+    saveCarouselEntries(
+      kv,
+      carouselPhotoIds.map((photoId) => ({ photoId })),
+    ),
+  ]);
 };

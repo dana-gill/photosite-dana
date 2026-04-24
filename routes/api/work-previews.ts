@@ -12,7 +12,7 @@ export const handler = define.handlers({
       async (slug): Promise<WorkPreview | null> => {
         const photos = await getPhotosByAlbumSlug(ctx.state.kv, slug);
         const firstPhoto = photos?.[0];
-        if (!firstPhoto) return null;
+        if (!firstPhoto || !firstPhoto.image?.asset?.metadata) return null;
 
         return {
           href: `/work/${slug}`,
