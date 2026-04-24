@@ -80,7 +80,9 @@ export default function AlbumPhotoSorter(
     };
   }, []);
 
-  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>([]);
+  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>(
+    [],
+  );
 
   const handleDelete = (photoId: string) => {
     setPendingDeletes((prev) => [...prev, photoId]);
@@ -96,7 +98,9 @@ export default function AlbumPhotoSorter(
     const deleteResults = await Promise.all(
       pendingDeletes.map((photoId) =>
         fetch(
-          `/api/admin/albums/${albumId}/photos?photoDocumentId=${encodeURIComponent(photoId)}`,
+          `/api/admin/albums/${albumId}/photos?photoDocumentId=${
+            encodeURIComponent(photoId)
+          }`,
           { method: "DELETE" },
         )
       ),

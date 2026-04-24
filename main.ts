@@ -4,8 +4,8 @@ import { App, staticFiles } from "fresh";
 import type { State, WorkPreview } from "./utils.ts";
 import { refreshAlbumCache } from "./services/image-service.ts";
 import {
-  getAllAlbumSlugs,
   getAlbumBySlug,
+  getAllAlbumSlugs,
   getPhotosByAlbumSlug,
 } from "./services/cache-manager.ts";
 import type { NavLink } from "./types/nav.ts";
@@ -39,7 +39,9 @@ const fetchWorkLinks = async (
   kv: Deno.Kv,
 ): Promise<ReadonlyArray<NavLink>> => {
   const slugs = await getAllAlbumSlugs(kv);
-  const albums = await Promise.all(slugs.map((slug) => getAlbumBySlug(kv, slug)));
+  const albums = await Promise.all(
+    slugs.map((slug) => getAlbumBySlug(kv, slug)),
+  );
   return albums
     .filter((album): album is NonNullable<typeof album> => album !== null)
     .map((album) => ({ href: `/work/${album.slug}`, label: album.title }))

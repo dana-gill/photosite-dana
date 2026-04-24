@@ -1,7 +1,10 @@
 import type { SanityAlbum, SanityPhoto } from "../../../types/sanity.ts";
 import { Head } from "fresh/runtime";
 import { define } from "../../../utils.ts";
-import { fetchAllAlbums, fetchPhotosByAlbum } from "../../../services/album-service.ts";
+import {
+  fetchAllAlbums,
+  fetchPhotosByAlbum,
+} from "../../../services/album-service.ts";
 import AlbumPhotoSorter from "../../../islands/AlbumPhotoSorter.tsx";
 import EditAlbumFields from "../../../islands/EditAlbumFields.tsx";
 import PhotoUploader from "../../../islands/PhotoUploader.tsx";
@@ -36,7 +39,9 @@ export default define.page<typeof handler>(function AlbumEditor({ data }) {
         <title>{album.title} - Admin</title>
       </Head>
       <div class="mb-6">
-        <a href="/admin" class="text-sm text-gray-500 hover:text-gray-900">← Albums</a>
+        <a href="/admin" class="text-sm text-gray-500 hover:text-gray-900">
+          ← Albums
+        </a>
         <EditAlbumFields
           albumId={album._id}
           initialTitle={album.title}
@@ -45,7 +50,9 @@ export default define.page<typeof handler>(function AlbumEditor({ data }) {
         <p class="text-sm text-gray-400 mt-1">slug: {album.slug}</p>
       </div>
       <div class="mb-4 flex items-center justify-between">
-        <h2 class="text-lg font-medium text-gray-900">Photos ({photos.length})</h2>
+        <h2 class="text-lg font-medium text-gray-900">
+          Photos ({photos.length})
+        </h2>
         <p class="text-sm text-gray-500">Drag to reorder, then save.</p>
       </div>
       <AlbumPhotoSorter albumId={album._id} photos={photos} />

@@ -13,7 +13,8 @@ const client = createClient({
   useCdn: false,
 });
 
-const IMAGE_PROJECTION = `image { asset->{ _id, url, metadata { dimensions, lqip } }, hotspot }`;
+const IMAGE_PROJECTION =
+  `image { asset->{ _id, url, metadata { dimensions, lqip } }, hotspot }`;
 
 export const createAlbum = async (
   title: string,
@@ -62,13 +63,17 @@ export const deletePhoto = async (_id: string): Promise<void> => {
   await client.delete(_id);
 };
 
-export const fetchAlbumBySlug = async (slug: string): Promise<SanityAlbum | null> => {
-  const doc = await client.fetch<{
-    _id: string;
-    title: string;
-    slug: { current: string };
-    description: string | null;
-  } | null>(
+export const fetchAlbumBySlug = async (
+  slug: string,
+): Promise<SanityAlbum | null> => {
+  const doc = await client.fetch<
+    {
+      _id: string;
+      title: string;
+      slug: { current: string };
+      description: string | null;
+    } | null
+  >(
     `*[_type == "album" && slug.current == $slug][0]{ _id, title, slug, description }`,
     { slug },
   );
@@ -84,12 +89,14 @@ export const fetchAlbumBySlug = async (slug: string): Promise<SanityAlbum | null
 };
 
 export const fetchAllAlbums = async (): Promise<ReadonlyArray<SanityAlbum>> => {
-  const docs = await client.fetch<ReadonlyArray<{
-    _id: string;
-    title: string;
-    slug: { current: string };
-    description: string | null;
-  }>>(
+  const docs = await client.fetch<
+    ReadonlyArray<{
+      _id: string;
+      title: string;
+      slug: { current: string };
+      description: string | null;
+    }>
+  >(
     `*[_type == "album"]{ _id, title, slug, description }`,
   );
 
@@ -117,7 +124,9 @@ export const fetchPhotoById = async (_id: string): Promise<SanityPhoto> => {
   return doc;
 };
 
-export const fetchPhotosByAlbum = async (albumId: string): Promise<ReadonlyArray<SanityPhoto>> => {
+export const fetchPhotosByAlbum = async (
+  albumId: string,
+): Promise<ReadonlyArray<SanityPhoto>> => {
   return client.fetch<ReadonlyArray<SanityPhoto>>(
     `*[_type == "photo" && album._ref == $albumId] | order(order asc){ _id, ${IMAGE_PROJECTION}, altTitle, caption, order, album }`,
     { albumId },
@@ -131,7 +140,9 @@ export const updateAlbum = async (
   const patch = client.patch(_id);
 
   if (fields.title !== undefined) patch.set({ title: fields.title });
-  if (fields.description !== undefined) patch.set({ description: fields.description || null });
+  if (fields.description !== undefined) {
+    patch.set({ description: fields.description || null });
+  }
 
   const doc = await patch.commit<{
     _id: string;
@@ -148,7 +159,10 @@ export const updateAlbum = async (
   };
 };
 
-export const updatePhotoOrder = async (_id: string, order: number): Promise<void> => {
+export const updatePhotoOrder = async (
+  _id: string,
+  order: number,
+): Promise<void> => {
   await client.patch(_id).set({ order }).commit();
 };
 

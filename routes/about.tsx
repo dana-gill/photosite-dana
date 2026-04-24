@@ -2,7 +2,10 @@ import type { SanityPhoto } from "../types/sanity.ts";
 import { Head } from "fresh/runtime";
 import { Image } from "../components/Image.tsx";
 import { define } from "../utils.ts";
-import { getAlbumBySlug, getPhotosByAlbumSlug } from "../services/cache-manager.ts";
+import {
+  getAlbumBySlug,
+  getPhotosByAlbumSlug,
+} from "../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {

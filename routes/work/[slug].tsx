@@ -3,7 +3,10 @@ import { Head } from "fresh/runtime";
 import { Image } from "../../components/Image.tsx";
 import { PageHeader } from "../../components/PageHeader.tsx";
 import { define } from "../../utils.ts";
-import { getAlbumBySlug, getPhotosByAlbumSlug } from "../../services/cache-manager.ts";
+import {
+  getAlbumBySlug,
+  getPhotosByAlbumSlug,
+} from "../../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
@@ -36,7 +39,10 @@ export default define.page<typeof handler>(function AlbumPage({ data }) {
         />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {photos.map((photo: SanityPhoto) => (
-            <div key={photo._id} class="overflow-hidden max-w-lg fade-in-images">
+            <div
+              key={photo._id}
+              class="overflow-hidden max-w-lg fade-in-images"
+            >
               <Image
                 alt={photo.altTitle ?? photo.caption ?? photo.image.asset._id}
                 height={photo.image.asset.metadata.dimensions.height}

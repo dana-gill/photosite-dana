@@ -1,6 +1,11 @@
 import { define } from "../../../../../utils.ts";
 import { isAdminAuthorized } from "../../../../../services/admin-auth-service.ts";
-import { createPhoto, deletePhoto, fetchPhotosByAlbum, uploadMediaFile } from "../../../../../services/album-service.ts";
+import {
+  createPhoto,
+  deletePhoto,
+  fetchPhotosByAlbum,
+  uploadMediaFile,
+} from "../../../../../services/album-service.ts";
 import { refreshAlbumCache } from "../../../../../services/image-service.ts";
 
 export const handler = define.handlers({
@@ -61,10 +66,13 @@ export const handler = define.handlers({
     const photoId = url.searchParams.get("photoDocumentId");
 
     if (!photoId) {
-      return new Response(JSON.stringify({ error: "photoDocumentId is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "photoDocumentId is required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     await deletePhoto(photoId);

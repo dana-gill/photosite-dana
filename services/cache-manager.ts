@@ -1,6 +1,10 @@
 /// <reference lib="deno.unstable" />
 
-import type { SanityAlbum, SanityPhoto, CarouselEntry } from "../types/sanity.ts";
+import type {
+  CarouselEntry,
+  SanityAlbum,
+  SanityPhoto,
+} from "../types/sanity.ts";
 
 export const clearAlbumCache = async (kv: Deno.Kv): Promise<void> => {
   const albumEntries = kv.list({ prefix: ["album"] });
@@ -56,7 +60,10 @@ export const getPhotosByAlbumSlug = async (
   kv: Deno.Kv,
   slug: string,
 ): Promise<ReadonlyArray<SanityPhoto> | null> => {
-  const result = await kv.get<ReadonlyArray<SanityPhoto>>(["album-photos", slug]);
+  const result = await kv.get<ReadonlyArray<SanityPhoto>>([
+    "album-photos",
+    slug,
+  ]);
   return result.value;
 };
 
@@ -78,7 +85,10 @@ export const saveAlbumPhotos = async (
 
 export const saveAllAlbumPhotos = async (
   kv: Deno.Kv,
-  albumPhotosMap: ReadonlyMap<string, { album: SanityAlbum; photos: ReadonlyArray<SanityPhoto> }>,
+  albumPhotosMap: ReadonlyMap<
+    string,
+    { album: SanityAlbum; photos: ReadonlyArray<SanityPhoto> }
+  >,
 ): Promise<void> => {
   const saveOperations = Array.from(albumPhotosMap.entries()).flatMap(
     ([slug, { album, photos }]) => [

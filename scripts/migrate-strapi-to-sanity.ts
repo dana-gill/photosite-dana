@@ -1,5 +1,9 @@
 import { createClient } from "@sanity/client";
-import type { StrapiAlbum, StrapiListResponse, StrapiPhoto } from "./migrate-strapi-to-sanity-types.ts";
+import type {
+  StrapiAlbum,
+  StrapiListResponse,
+  StrapiPhoto,
+} from "./migrate-strapi-to-sanity-types.ts";
 
 const SANITY_PROJECT_ID = Deno.env.get("SANITY_PROJECT_ID") ?? "";
 const SANITY_DATASET = Deno.env.get("SANITY_DATASET") ?? "production";
@@ -7,8 +11,12 @@ const SANITY_API_TOKEN = Deno.env.get("SANITY_API_TOKEN") ?? "";
 const STRAPI_URL = Deno.env.get("STRAPI_URL") ?? "";
 const STRAPI_API_TOKEN = Deno.env.get("STRAPI_API_TOKEN") ?? "";
 
-if (!SANITY_PROJECT_ID || !SANITY_API_TOKEN || !STRAPI_URL || !STRAPI_API_TOKEN) {
-  console.error("Missing required env vars: SANITY_PROJECT_ID, SANITY_API_TOKEN, STRAPI_URL, STRAPI_API_TOKEN");
+if (
+  !SANITY_PROJECT_ID || !SANITY_API_TOKEN || !STRAPI_URL || !STRAPI_API_TOKEN
+) {
+  console.error(
+    "Missing required env vars: SANITY_PROJECT_ID, SANITY_API_TOKEN, STRAPI_URL, STRAPI_API_TOKEN",
+  );
   Deno.exit(1);
 }
 
@@ -29,7 +37,9 @@ const fetchStrapi = async <T>(path: string): Promise<StrapiListResponse<T>> => {
 };
 
 const fetchAllAlbums = async (): Promise<ReadonlyArray<StrapiAlbum>> => {
-  const res = await fetchStrapi<StrapiAlbum>("api/albums?pagination%5BpageSize%5D=100");
+  const res = await fetchStrapi<StrapiAlbum>(
+    "api/albums?pagination%5BpageSize%5D=100",
+  );
   return res.data;
 };
 
@@ -38,10 +48,14 @@ const fetchAllPhotos = async (): Promise<ReadonlyArray<StrapiPhoto>> => {
     "api/photos?populate%5B0%5D=image&populate%5B1%5D=album&pagination%5BpageSize%5D=100&pagination%5Bpage%5D=1",
   );
   const rest = await Promise.all(
-    Array.from({ length: first.meta.pagination.pageCount - 1 }, (_, i) =>
-      fetchStrapi<StrapiPhoto>(
-        `api/photos?populate%5B0%5D=image&populate%5B1%5D=album&pagination%5BpageSize%5D=100&pagination%5Bpage%5D=${i + 2}`,
-      ).then((r) => r.data)
+    Array.from(
+      { length: first.meta.pagination.pageCount - 1 },
+      (_, i) =>
+        fetchStrapi<StrapiPhoto>(
+          `api/photos?populate%5B0%5D=image&populate%5B1%5D=album&pagination%5BpageSize%5D=100&pagination%5Bpage%5D=${
+            i + 2
+          }`,
+        ).then((r) => r.data),
     ),
   );
   return [...first.data, ...rest.flat()];
@@ -60,10 +74,15 @@ const migrateAlbum = async (album: StrapiAlbum): Promise<string> => {
   return sanityId;
 };
 
-const migratePhoto = async (photo: StrapiPhoto, sanityAlbumId: string): Promise<void> => {
+const migratePhoto = async (
+  photo: StrapiPhoto,
+  sanityAlbumId: string,
+): Promise<void> => {
   console.log(`  Uploading: ${photo.image.name}`);
   const imageRes = await fetch(photo.image.url);
-  if (!imageRes.ok) throw new Error(`Failed to fetch image: ${photo.image.url}`);
+  if (!imageRes.ok) {
+    throw new Error(`Failed to fetch image: ${photo.image.url}`);
+  }
   const buffer = await imageRes.arrayBuffer();
   const asset = await sanity.assets.upload("image", new Uint8Array(buffer), {
     filename: photo.image.name,
@@ -103,12 +122,16 @@ const migrate = async (): Promise<void> => {
 
   for (const photo of sorted) {
     if (!photo.album) {
-      console.log(`  — Skipping orphaned photo (no album): ${photo.image.name}`);
+      console.log(
+        `  — Skipping orphaned photo (no album): ${photo.image.name}`,
+      );
       continue;
     }
     const sanityAlbumId = albumIdMap.get(photo.album.documentId);
     if (!sanityAlbumId) {
-      errors.push(`No album found for photo ${photo.image.name} (albumDocumentId: ${photo.album.documentId})`);
+      errors.push(
+        `No album found for photo ${photo.image.name} (albumDocumentId: ${photo.album.documentId})`,
+      );
       continue;
     }
     try {

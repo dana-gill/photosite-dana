@@ -7,7 +7,9 @@ interface DeleteAlbumButtonProps {
   readonly title: string;
 }
 
-export default function DeleteAlbumButton({ albumId, title }: DeleteAlbumButtonProps) {
+export default function DeleteAlbumButton(
+  { albumId, title }: DeleteAlbumButtonProps,
+) {
   const [status, setStatus] = useState<DeleteStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 

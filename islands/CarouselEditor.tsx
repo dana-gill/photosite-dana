@@ -253,7 +253,11 @@ export default function CarouselEditor(
 
         <ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {pagePhotos.map((photo) =>
-            renderLibraryPhotoButton(photo, carouselIds.has(photo._id), handleAdd)
+            renderLibraryPhotoButton(
+              photo,
+              carouselIds.has(photo._id),
+              handleAdd,
+            )
           )}
         </ul>
       </section>

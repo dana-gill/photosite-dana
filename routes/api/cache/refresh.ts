@@ -23,7 +23,10 @@ export const handler = define.handlers({
       await refreshAlbumCache(kv);
 
       return new Response(
-        JSON.stringify({ success: true, message: "Cache refreshed successfully" }),
+        JSON.stringify({
+          success: true,
+          message: "Cache refreshed successfully",
+        }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } catch (error) {

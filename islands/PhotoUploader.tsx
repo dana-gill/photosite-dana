@@ -48,7 +48,11 @@ export default function PhotoUploader({ albumId }: PhotoUploaderProps) {
     setUploads(files.map(buildInitialState));
   };
 
-  const setFileStatus = (index: number, status: UploadStatus, errorMessage: string | null) => {
+  const setFileStatus = (
+    index: number,
+    status: UploadStatus,
+    errorMessage: string | null,
+  ) => {
     setUploads((prev) =>
       prev.map((item, i) =>
         i === index ? { ...item, status, errorMessage } : item
@@ -94,7 +98,10 @@ export default function PhotoUploader({ albumId }: PhotoUploaderProps) {
       <h2 class="text-lg font-medium text-gray-900 mb-4">Upload photos</h2>
       <div class="flex flex-col gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1" htmlFor="photo-files">
+          <label
+            class="block text-sm font-medium text-gray-700 mb-1"
+            htmlFor="photo-files"
+          >
             Select images
           </label>
           <input
@@ -111,16 +118,20 @@ export default function PhotoUploader({ albumId }: PhotoUploaderProps) {
           <ul class="text-sm divide-y divide-gray-100 border border-gray-100 rounded">
             {uploads.map((u, i) => (
               <li key={i} class="flex items-center justify-between px-3 py-2">
-                <span class="truncate max-w-xs text-gray-700">{u.file.name}</span>
-                <span class={`ml-4 shrink-0 ${
-                  u.status === "done"
-                    ? "text-green-600"
-                    : u.status === "error"
-                    ? "text-red-600"
-                    : u.status === "uploading"
-                    ? "text-blue-600"
-                    : "text-gray-400"
-                }`}>
+                <span class="truncate max-w-xs text-gray-700">
+                  {u.file.name}
+                </span>
+                <span
+                  class={`ml-4 shrink-0 ${
+                    u.status === "done"
+                      ? "text-green-600"
+                      : u.status === "error"
+                      ? "text-red-600"
+                      : u.status === "uploading"
+                      ? "text-blue-600"
+                      : "text-gray-400"
+                  }`}
+                >
                   {u.status === "done"
                     ? "Done"
                     : u.status === "error"

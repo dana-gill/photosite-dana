@@ -1,5 +1,3 @@
-/// <reference lib="deno.ns" />
-
 import { load } from "jsr:@std/dotenv";
 
 await load({ export: true });
@@ -37,18 +35,29 @@ const strapiHeaders: HeadersInit = {
 };
 
 const fetchAllAlbums = async (): Promise<ReadonlyArray<StrapiAlbum>> => {
-  const response = await fetch(`${STRAPI_URL}api/albums?pagination[pageSize]=100`, {
-    headers: strapiHeaders,
-  });
-  if (!response.ok) throw new Error(`Failed to fetch albums: ${response.statusText}`);
+  const response = await fetch(
+    `${STRAPI_URL}api/albums?pagination[pageSize]=100`,
+    {
+      headers: strapiHeaders,
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch albums: ${response.statusText}`);
+  }
   const data: StrapiAlbumResponse = await response.json();
   return data.data;
 };
 
 const fetchPhotoCount = async (albumDocumentId: string): Promise<number> => {
-  const url = `${STRAPI_URL}api/photos?filters[album][documentId][$eq]=${encodeURIComponent(albumDocumentId)}&pagination[pageSize]=1`;
+  const url = `${STRAPI_URL}api/photos?filters[album][documentId][$eq]=${
+    encodeURIComponent(albumDocumentId)
+  }&pagination[pageSize]=1`;
   const response = await fetch(url, { headers: strapiHeaders });
-  if (!response.ok) throw new Error(`Failed to fetch photo count for ${albumDocumentId}: ${response.statusText}`);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch photo count for ${albumDocumentId}: ${response.statusText}`,
+    );
+  }
   const data: StrapiPhotoCountResponse = await response.json();
   return data.meta.pagination.total;
 };
@@ -58,7 +67,11 @@ const deleteAlbum = async (documentId: string): Promise<void> => {
     method: "DELETE",
     headers: strapiHeaders,
   });
-  if (!response.ok) throw new Error(`Failed to delete album ${documentId}: ${response.statusText}`);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to delete album ${documentId}: ${response.statusText}`,
+    );
+  }
 };
 
 const isDryRun = Deno.args.includes("--dry-run");
@@ -77,8 +90,14 @@ const withCounts = await Promise.all(
 );
 
 if (isList) {
-  const sorted = [...withCounts].sort((a, b) => a.album.title.localeCompare(b.album.title));
-  sorted.forEach((e) => console.log(`[${e.photoCount} photos] ${e.album.title} | slug: ${e.album.slug} | id: ${e.album.documentId}`));
+  const sorted = [...withCounts].sort((a, b) =>
+    a.album.title.localeCompare(b.album.title)
+  );
+  sorted.forEach((e) =>
+    console.log(
+      `[${e.photoCount} photos] ${e.album.title} | slug: ${e.album.slug} | id: ${e.album.documentId}`,
+    )
+  );
   Deno.exit(0);
 }
 
@@ -96,7 +115,9 @@ if (toDelete.length === 0) {
 }
 
 console.log(`\n${isDryRun ? "[DRY RUN] " : ""}Albums to delete:`);
-toDelete.forEach((e) => console.log(`  - ${e.title} (${e.documentId}): ${e.reason}`));
+toDelete.forEach((e) =>
+  console.log(`  - ${e.title} (${e.documentId}): ${e.reason}`)
+);
 
 if (isDryRun) {
   console.log("\nDry run complete. Pass no flags to perform deletion.");

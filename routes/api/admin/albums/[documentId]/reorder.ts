@@ -26,7 +26,9 @@ export const handler = define.handlers({
 
     const body: ReorderBody = await ctx.req.json();
 
-    await Promise.all(body.photos.map((entry) => updatePhotoOrder(entry._id, entry.order)));
+    await Promise.all(
+      body.photos.map((entry) => updatePhotoOrder(entry._id, entry.order)),
+    );
     await refreshAlbumCache(ctx.state.kv);
 
     return new Response(JSON.stringify({ success: true }), {

@@ -1,5 +1,8 @@
 import { define } from "../../../utils.ts";
-import { getAllAlbumSlugs, getPhotosByAlbumSlug } from "../../../services/cache-manager.ts";
+import {
+  getAllAlbumSlugs,
+  getPhotosByAlbumSlug,
+} from "../../../services/cache-manager.ts";
 
 const PHOTOSITE_TOKEN = Deno.env.get("PHOTOSITE_TOKEN") ?? "";
 

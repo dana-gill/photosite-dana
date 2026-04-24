@@ -42,11 +42,14 @@ export default define.page<typeof handler>(function AdminIndex({ data }) {
       </Head>
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-semibold text-gray-900">Albums</h1>
-        <a href="/admin/carousel" class="text-sm text-gray-500 hover:text-gray-900">Carousel Editor →</a>
+        <a
+          href="/admin/carousel"
+          class="text-sm text-gray-500 hover:text-gray-900"
+        >
+          Carousel Editor →
+        </a>
       </div>
-      {rows.length === 0 && (
-        <p class="text-gray-500">No albums found.</p>
-      )}
+      {rows.length === 0 && <p class="text-gray-500">No albums found.</p>}
       <ul class="divide-y divide-gray-200 bg-white rounded border border-gray-200">
         {rows.map((row) => (
           <li key={row._id} class="flex items-center justify-between px-4 py-3">
