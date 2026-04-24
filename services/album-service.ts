@@ -2,17 +2,21 @@ import { Buffer } from "node:buffer";
 import { createClient } from "@sanity/client";
 import type { SanityAlbum, SanityPhoto } from "../types/sanity.ts";
 
-const projectId = Deno.env.get("SANITY_PROJECT_ID") ?? "";
-const dataset = Deno.env.get("SANITY_DATASET") ?? "production";
-const apiToken = Deno.env.get("SANITY_API_TOKEN") ?? "";
+const getClient = () => {
+  const projectId = Deno.env.get("SANITY_PROJECT_ID");
+  const apiToken = Deno.env.get("SANITY_API_TOKEN");
 
-const client = createClient({
-  projectId,
-  dataset,
-  apiVersion: "2026-03-14",
-  token: apiToken,
-  useCdn: false,
-});
+  if (!projectId) throw new Error("SANITY_PROJECT_ID env var is not set");
+  if (!apiToken) throw new Error("SANITY_API_TOKEN env var is not set");
+
+  return createClient({
+    projectId,
+    dataset: Deno.env.get("SANITY_DATASET") ?? "production",
+    apiVersion: "2026-03-14",
+    token: apiToken,
+    useCdn: false,
+  });
+};
 
 const IMAGE_PROJECTION =
   `image { asset->{ _id, url, metadata { dimensions, lqip } }, hotspot }`;
@@ -22,7 +26,7 @@ export const createAlbum = async (
   slug: string,
   description: string,
 ): Promise<SanityAlbum> => {
-  const doc = await client.create({
+  const doc = await getClient().create({
     _type: "album",
     title,
     slug: { _type: "slug", current: slug },
@@ -44,7 +48,7 @@ export const createPhoto = async (
   caption: string,
   order: number,
 ): Promise<SanityPhoto> => {
-  const doc = await client.create({
+  const doc = await getClient().create({
     _type: "photo",
     image: { _type: "image", asset: { _type: "reference", _ref: assetId } },
     altTitle: altTitle || null,
@@ -57,17 +61,17 @@ export const createPhoto = async (
 };
 
 export const deleteAlbum = async (_id: string): Promise<void> => {
-  await client.delete(_id);
+  await getClient().delete(_id);
 };
 
 export const deletePhoto = async (_id: string): Promise<void> => {
-  await client.delete(_id);
+  await getClient().delete(_id);
 };
 
 export const fetchAlbumBySlug = async (
   slug: string,
 ): Promise<SanityAlbum | null> => {
-  const doc = await client.fetch<
+  const doc = await getClient().fetch<
     {
       _id: string;
       title: string;
@@ -90,7 +94,7 @@ export const fetchAlbumBySlug = async (
 };
 
 export const fetchAllAlbums = async (): Promise<ReadonlyArray<SanityAlbum>> => {
-  const docs = await client.fetch<
+  const docs = await getClient().fetch<
     ReadonlyArray<{
       _id: string;
       title: string;
@@ -110,7 +114,7 @@ export const fetchAllAlbums = async (): Promise<ReadonlyArray<SanityAlbum>> => {
 };
 
 export const fetchPhotoById = async (_id: string): Promise<SanityPhoto> => {
-  const doc = await client.fetch<{
+  const doc = await getClient().fetch<{
     _id: string;
     image: SanityPhoto["image"];
     altTitle: string | null;
@@ -128,7 +132,7 @@ export const fetchPhotoById = async (_id: string): Promise<SanityPhoto> => {
 export const fetchCarouselPhotoIds = async (): Promise<
   ReadonlyArray<string>
 > => {
-  const doc = await client.fetch<{
+  const doc = await getClient().fetch<{
     images: ReadonlyArray<{ _ref: string }> | null;
   } | null>(
     `*[_type == "carousel"][0]{ "images": images[]{ _ref } }`,
@@ -139,7 +143,7 @@ export const fetchCarouselPhotoIds = async (): Promise<
 export const fetchPhotosByAlbum = async (
   albumId: string,
 ): Promise<ReadonlyArray<SanityPhoto>> => {
-  return client.fetch<ReadonlyArray<SanityPhoto>>(
+  return getClient().fetch<ReadonlyArray<SanityPhoto>>(
     `*[_type == "photo" && album._ref == $albumId] | order(order asc){ _id, ${IMAGE_PROJECTION}, altTitle, caption, order, album }`,
     { albumId },
   );
@@ -149,7 +153,7 @@ export const updateAlbum = async (
   _id: string,
   fields: { title?: string; description?: string },
 ): Promise<SanityAlbum> => {
-  const patch = client.patch(_id);
+  const patch = getClient().patch(_id);
 
   if (fields.title !== undefined) patch.set({ title: fields.title });
   if (fields.description !== undefined) {
@@ -175,12 +179,12 @@ export const updatePhotoOrder = async (
   _id: string,
   order: number,
 ): Promise<void> => {
-  await client.patch(_id).set({ order }).commit();
+  await getClient().patch(_id).set({ order }).commit();
 };
 
 export const uploadMediaFile = async (file: File): Promise<string> => {
   const buffer = await file.arrayBuffer();
-  const asset = await client.assets.upload("image", Buffer.from(buffer), {
+  const asset = await getClient().assets.upload("image", Buffer.from(buffer), {
     filename: file.name,
     contentType: file.type,
   });
