@@ -1,6 +1,9 @@
 import { define } from "../../../../../utils.ts";
 import { isAdminAuthorized } from "../../../../../services/admin-auth-service.ts";
-import { deleteAlbum, updateAlbum } from "../../../../../services/album-service.ts";
+import {
+  deleteAlbum,
+  updateAlbum,
+} from "../../../../../services/album-service.ts";
 import { refreshAlbumCache } from "../../../../../services/image-service.ts";
 
 interface UpdateAlbumBody {
@@ -23,7 +26,10 @@ export const handler = define.handlers({
     const { documentId } = ctx.params;
     const body: UpdateAlbumBody = await ctx.req.json();
 
-    const album = await updateAlbum(documentId, { title: body.title, description: body.description });
+    const album = await updateAlbum(documentId, {
+      title: body.title,
+      description: body.description,
+    });
     await refreshAlbumCache(ctx.state.kv);
 
     return new Response(JSON.stringify({ data: album }), {

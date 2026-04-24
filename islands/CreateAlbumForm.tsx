@@ -22,11 +22,11 @@ const refreshCache = async (): Promise<void> => {
   await fetch("/api/admin/cache/refresh", { method: "POST" });
 };
 
-const uploadPhoto = async (albumDocumentId: string, file: File): Promise<void> => {
+const uploadPhoto = async (albumId: string, file: File): Promise<void> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`/api/admin/albums/${albumDocumentId}/photos`, {
+  const response = await fetch(`/api/admin/albums/${albumId}/photos`, {
     method: "POST",
     body: formData,
   });
@@ -47,7 +47,9 @@ export default function CreateAlbumForm() {
   const [status, setStatus] = useState<FormStatus>("idle");
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [createdDocumentId, setCreatedDocumentId] = useState<string | null>(null);
+  const [createdDocumentId, setCreatedDocumentId] = useState<string | null>(
+    null,
+  );
   const sortableListRef = useRef<HTMLUListElement>(null);
   const sortableRef = useRef<Sortable | null>(null);
 
@@ -59,7 +61,9 @@ export default function CreateAlbumForm() {
       animation: 150,
       onEnd: () => {
         if (!sortableListRef.current) return;
-        const nodes = Array.from(sortableListRef.current.querySelectorAll("[data-id]"));
+        const nodes = Array.from(
+          sortableListRef.current.querySelectorAll("[data-id]"),
+        );
         setStagedFiles((prev) =>
           nodes.map((node) => {
             const id = node.getAttribute("data-id") ?? "";
@@ -149,20 +153,22 @@ export default function CreateAlbumForm() {
     }
 
     const albumBody = await albumResponse.json();
-    const documentId: string = albumBody.data.documentId;
+    const albumId: string = albumBody.data._id;
 
     if (stagedFiles.length > 0) {
       await stagedFiles.reduce<Promise<void>>(async (chain, staged, index) => {
         await chain;
-        setUploadProgress(`Uploading photo ${index + 1} of ${stagedFiles.length}…`);
-        await uploadPhoto(documentId, staged.file);
+        setUploadProgress(
+          `Uploading photo ${index + 1} of ${stagedFiles.length}…`,
+        );
+        await uploadPhoto(albumId, staged.file);
       }, Promise.resolve());
     }
 
     setUploadProgress("Refreshing cache…");
     await refreshCache();
 
-    setCreatedDocumentId(documentId);
+    setCreatedDocumentId(albumId);
     setTitle("");
     setSlug("");
     setSlugManuallyEdited(false);
@@ -187,7 +193,10 @@ export default function CreateAlbumForm() {
       )}
       <form onSubmit={handleSubmit} class="flex flex-col gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1" htmlFor="album-title">
+          <label
+            class="block text-sm font-medium text-gray-700 mb-1"
+            htmlFor="album-title"
+          >
             Title
           </label>
           <input
@@ -201,7 +210,10 @@ export default function CreateAlbumForm() {
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1" htmlFor="album-slug">
+          <label
+            class="block text-sm font-medium text-gray-700 mb-1"
+            htmlFor="album-slug"
+          >
             Slug
           </label>
           <input
@@ -214,10 +226,15 @@ export default function CreateAlbumForm() {
             disabled={isSubmitting}
             class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:opacity-50"
           />
-          <p class="text-xs text-gray-400 mt-1">Lowercase letters, numbers, hyphens only</p>
+          <p class="text-xs text-gray-400 mt-1">
+            Lowercase letters, numbers, hyphens only
+          </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1" htmlFor="album-description">
+          <label
+            class="block text-sm font-medium text-gray-700 mb-1"
+            htmlFor="album-description"
+          >
             Description
           </label>
           <textarea
@@ -236,8 +253,12 @@ export default function CreateAlbumForm() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             class={`border-2 border-dashed rounded px-4 py-6 text-center text-sm transition-colors ${
-              isDragOver ? "border-gray-500 bg-gray-50" : "border-gray-300 text-gray-400"
-            } ${isSubmitting ? "pointer-events-none opacity-50" : "cursor-pointer"}`}
+              isDragOver
+                ? "border-gray-500 bg-gray-50"
+                : "border-gray-300 text-gray-400"
+            } ${
+              isSubmitting ? "pointer-events-none opacity-50" : "cursor-pointer"
+            }`}
           >
             <p>Drag photos here</p>
             <p class="mt-1">
@@ -285,15 +306,16 @@ export default function CreateAlbumForm() {
             </ul>
           )}
           {stagedFiles.length > 0 && (
-            <p class="text-xs text-gray-400 mt-1">Drag to reorder before creating.</p>
+            <p class="text-xs text-gray-400 mt-1">
+              Drag to reorder before creating.
+            </p>
           )}
         </div>
         {status === "error" && errorMessage && (
           <p class="text-sm text-red-600">{errorMessage}</p>
         )}
-        {uploadProgress && (
-          <p class="text-sm text-gray-500">{uploadProgress}</p>
-        )}
+        {uploadProgress && <p class="text-sm text-gray-500">{uploadProgress}
+        </p>}
         <div>
           <button
             type="submit"

@@ -3,15 +3,12 @@ import type { NavLink } from "../types/nav.ts";
 import type { WorkPreview } from "../utils.ts";
 import WorkModal from "./WorkModal.tsx";
 import WorkModalMobile from "./WorkModalMobile.tsx";
+import { NAV_LINKS } from "./consts.ts";
 
 interface NavProps {
   workLinks: ReadonlyArray<NavLink>;
   workPreviews: ReadonlyArray<WorkPreview>;
 }
-
-const navLinks: ReadonlyArray<NavLink> = [
-  { href: "/about", label: "About" },
-];
 
 export default function Nav({ workLinks, workPreviews }: NavProps) {
   const [isWorkOpen, setIsWorkOpen] = useState(false);
@@ -49,7 +46,7 @@ export default function Nav({ workLinks, workPreviews }: NavProps) {
               </a>
             </li>
             <div class="flex gap-6">
-              {navLinks.map((link) => (
+              {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}

@@ -2,43 +2,30 @@
 
 import { App, staticFiles } from "fresh";
 import type { State, WorkPreview } from "./utils.ts";
-import { refreshAlbumCache, refreshCache } from "./services/image-service.ts";
+import { refreshAlbumCache } from "./services/image-service.ts";
 import {
-  getAllAlbumSlugs,
-  getCacheMetadata,
   getAlbumBySlug,
+  getAllAlbumSlugs,
   getPhotosByAlbumSlug,
 } from "./services/cache-manager.ts";
 import type { NavLink } from "./types/nav.ts";
 
 export const app = new App<State>();
 
-// Initialize KV once and store globally
 const kv = await Deno.openKv();
 
-// Initialize cache on startup
 console.log("Checking cache status...");
 
 try {
-  const metadata = await getCacheMetadata(kv);
   const slugs = await getAllAlbumSlugs(kv);
-  const hasValidMetadata = metadata && metadata.albumCount > 0 && metadata.totalImages > 0 && slugs.length > 0;
-  const shouldRefresh = !hasValidMetadata;
 
-  if (shouldRefresh) {
-    const reason = !metadata
-      ? "metadata missing"
-      : "cache empty or corrupted";
-    console.log(`Fetching from Strapi (${reason})...`);
-    await Promise.all([refreshCache(kv), refreshAlbumCache(kv)]);
-    const newMetadata = await getCacheMetadata(kv);
-    console.log(
-      `Cache initialized: ${newMetadata?.albumCount} albums, ${newMetadata?.totalImages} images`,
-    );
+  if (slugs.length === 0) {
+    console.log("Cache empty — fetching from Sanity...");
+    await refreshAlbumCache(kv);
+    const refreshedSlugs = await getAllAlbumSlugs(kv);
+    console.log(`Cache initialized: ${refreshedSlugs.length} albums`);
   } else {
-    console.log(
-      `Cache is fresh: ${metadata.albumCount} albums, ${metadata.totalImages} images (last refresh: ${metadata.lastRefresh})`,
-    );
+    console.log(`Cache is fresh: ${slugs.length} albums`);
   }
 } catch (error) {
   console.error("Failed to initialize cache:", error);
@@ -52,7 +39,9 @@ const fetchWorkLinks = async (
   kv: Deno.Kv,
 ): Promise<ReadonlyArray<NavLink>> => {
   const slugs = await getAllAlbumSlugs(kv);
-  const albums = await Promise.all(slugs.map((slug) => getAlbumBySlug(kv, slug)));
+  const albums = await Promise.all(
+    slugs.map((slug) => getAlbumBySlug(kv, slug)),
+  );
   return albums
     .filter((album): album is NonNullable<typeof album> => album !== null)
     .map((album) => ({ href: `/work/${album.slug}`, label: album.title }))
@@ -67,12 +56,12 @@ const fetchWorkPreviews = async (
     slugs.map(async (slug): Promise<WorkPreview | null> => {
       const photos = await getPhotosByAlbumSlug(kv, slug);
       const first = photos?.[0];
-      if (!first) return null;
+      if (!first || !first.image?.asset?.metadata) return null;
       return {
-        height: first.image.formats?.medium?.height ?? first.image.formats?.small?.height ?? first.image.height,
+        height: first.image.asset.metadata.dimensions.height,
         href: `/work/${slug}`,
-        imageUrl: first.image.formats?.medium?.url ?? first.image.formats?.small?.url ?? first.image.url,
-        width: first.image.formats?.medium?.width ?? first.image.formats?.small?.width ?? first.image.width,
+        imageUrl: first.image.asset.url,
+        width: first.image.asset.metadata.dimensions.width,
       };
     }),
   );
@@ -81,7 +70,6 @@ const fetchWorkPreviews = async (
 
 app.use(staticFiles());
 
-// Inject KV and work data into all requests via state
 app.use(async (ctx) => {
   const [workLinks, workPreviews] = await Promise.all([
     fetchWorkLinks(kv),
@@ -94,7 +82,6 @@ app.use(async (ctx) => {
   return await ctx.next();
 });
 
-// this is the same as the /api/:name route defined via a file. feel free to delete this!
 app.get("/api2/:name", (ctx) => {
   const name = ctx.params.name;
   return new Response(
@@ -102,5 +89,4 @@ app.get("/api2/:name", (ctx) => {
   );
 });
 
-// Include file-system based routes here
 app.fsRoutes();

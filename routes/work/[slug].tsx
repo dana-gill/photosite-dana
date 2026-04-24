@@ -1,9 +1,12 @@
-import type { StrapiPhoto } from "../../types/album.ts";
+import type { SanityPhoto } from "../../types/sanity.ts";
 import { Head } from "fresh/runtime";
 import { Image } from "../../components/Image.tsx";
 import { PageHeader } from "../../components/PageHeader.tsx";
 import { define } from "../../utils.ts";
-import { getAlbumBySlug, getPhotosByAlbumSlug } from "../../services/cache-manager.ts";
+import {
+  getAlbumBySlug,
+  getPhotosByAlbumSlug,
+} from "../../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
@@ -35,14 +38,16 @@ export default define.page<typeof handler>(function AlbumPage({ data }) {
           subtitle={album.description ?? ""}
         />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
-          {photos.map((photo: StrapiPhoto) => (
-            <div key={photo.id} class="overflow-hidden max-w-lg fade-in-images">
+          {photos.map((photo: SanityPhoto) => (
+            <div
+              key={photo._id}
+              class="overflow-hidden max-w-lg fade-in-images"
+            >
               <Image
-                alt={photo.altTitle ?? photo.caption ?? photo.image.alternativeText ?? photo.image.name}
-                formats={photo.image.formats}
-                height={photo.image.height}
-                src={photo.image.url}
-                width={photo.image.width}
+                alt={photo.altTitle ?? photo.caption ?? photo.image.asset._id}
+                height={photo.image.asset.metadata?.dimensions.height ?? 0}
+                src={photo.image.asset.url}
+                width={photo.image.asset.metadata?.dimensions.width ?? 0}
               />
               {photo.caption && (
                 <div class="p-4">

@@ -6,7 +6,7 @@ import CreateAlbumForm from "../../islands/CreateAlbumForm.tsx";
 import DeleteAlbumButton from "../../islands/DeleteAlbumButton.tsx";
 
 interface AlbumRow {
-  readonly documentId: string;
+  readonly _id: string;
   readonly slug: string;
   readonly title: string;
   readonly photoCount: number;
@@ -20,7 +20,7 @@ export const handler = define.handlers({
       albums.map(async (album): Promise<AlbumRow> => {
         const photos = await getPhotosByAlbumSlug(ctx.state.kv, album.slug);
         return {
-          documentId: album.documentId,
+          _id: album._id,
           slug: album.slug,
           title: album.title,
           photoCount: photos?.length ?? 0,
@@ -40,16 +40,22 @@ export default define.page<typeof handler>(function AdminIndex({ data }) {
       <Head>
         <title>Admin - Dana Gill Photography</title>
       </Head>
-      <h1 class="text-2xl font-semibold text-gray-900 mb-6">Albums</h1>
-      {rows.length === 0 && (
-        <p class="text-gray-500">No albums found. Create one in Strapi first.</p>
-      )}
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-semibold text-gray-900">Albums</h1>
+        <a
+          href="/admin/carousel"
+          class="text-sm text-gray-500 hover:text-gray-900"
+        >
+          Carousel Editor →
+        </a>
+      </div>
+      {rows.length === 0 && <p class="text-gray-500">No albums found.</p>}
       <ul class="divide-y divide-gray-200 bg-white rounded border border-gray-200">
         {rows.map((row) => (
-          <li key={row.documentId} class="flex items-center justify-between px-4 py-3">
+          <li key={row._id} class="flex items-center justify-between px-4 py-3">
             <div>
               <a
-                href={`/admin/albums/${row.documentId}`}
+                href={`/admin/albums/${row._id}`}
                 class="font-medium text-gray-900 hover:underline"
               >
                 {row.title}
@@ -58,7 +64,7 @@ export default define.page<typeof handler>(function AdminIndex({ data }) {
             </div>
             <div class="flex items-center gap-4">
               <span class="text-sm text-gray-500">{row.photoCount} photos</span>
-              <DeleteAlbumButton documentId={row.documentId} title={row.title} />
+              <DeleteAlbumButton albumId={row._id} title={row.title} />
             </div>
           </li>
         ))}

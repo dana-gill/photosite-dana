@@ -3,19 +3,21 @@ import { useState } from "preact/hooks";
 type EditStatus = "idle" | "editing" | "saving" | "error";
 
 interface EditAlbumFieldsProps {
-  readonly documentId: string;
+  readonly albumId: string;
   readonly initialTitle: string;
   readonly initialDescription: string | null;
 }
 
 export default function EditAlbumFields(
-  { documentId, initialTitle, initialDescription }: EditAlbumFieldsProps,
+  { albumId, initialTitle, initialDescription }: EditAlbumFieldsProps,
 ) {
   const [status, setStatus] = useState<EditStatus>("idle");
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription ?? "");
   const [savedTitle, setSavedTitle] = useState(initialTitle);
-  const [savedDescription, setSavedDescription] = useState(initialDescription ?? "");
+  const [savedDescription, setSavedDescription] = useState(
+    initialDescription ?? "",
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleEdit = () => {
@@ -40,7 +42,7 @@ export default function EditAlbumFields(
     setStatus("saving");
     setErrorMessage(null);
 
-    const response = await fetch(`/api/admin/albums/${documentId}`, {
+    const response = await fetch(`/api/admin/albums/${albumId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, description }),
@@ -70,7 +72,9 @@ export default function EditAlbumFields(
     return (
       <div class="flex flex-col gap-3 mt-2">
         <div>
-          <label class="block text-xs font-medium text-gray-600 mb-1">Title</label>
+          <label class="block text-xs font-medium text-gray-600 mb-1">
+            Title
+          </label>
           <input
             type="text"
             value={title}
@@ -80,7 +84,9 @@ export default function EditAlbumFields(
           />
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
+          <label class="block text-xs font-medium text-gray-600 mb-1">
+            Description
+          </label>
           <textarea
             value={description}
             onInput={handleDescriptionInput}
@@ -89,9 +95,7 @@ export default function EditAlbumFields(
             class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:opacity-50"
           />
         </div>
-        {errorMessage && (
-          <p class="text-xs text-red-600">{errorMessage}</p>
-        )}
+        {errorMessage && <p class="text-xs text-red-600">{errorMessage}</p>}
         <div class="flex gap-3">
           <button
             type="button"
@@ -127,7 +131,9 @@ export default function EditAlbumFields(
         </button>
       </div>
       <p class="text-gray-500 mt-1 text-sm">
-        {savedDescription || <span class="italic text-gray-400">No description</span>}
+        {savedDescription || (
+          <span class="italic text-gray-400">No description</span>
+        )}
       </p>
     </div>
   );

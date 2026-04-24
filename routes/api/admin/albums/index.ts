@@ -23,13 +23,20 @@ export const handler = define.handlers({
     const body: CreateAlbumBody = await ctx.req.json();
 
     if (!body.title || !body.slug) {
-      return new Response(JSON.stringify({ error: "title and slug are required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "title and slug are required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
-    const album = await createAlbum(body.title, body.slug, body.description ?? "");
+    const album = await createAlbum(
+      body.title,
+      body.slug,
+      body.description ?? "",
+    );
 
     return new Response(JSON.stringify({ data: album }), {
       status: 201,

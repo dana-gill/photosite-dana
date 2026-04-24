@@ -1,14 +1,34 @@
 import { define } from "../utils.ts";
-import { getAllImages } from "../services/cache-manager.ts";
+import {
+  getAllAlbumSlugs,
+  getCarouselEntries,
+  getPhotosByAlbumSlug,
+} from "../services/cache-manager.ts";
+import type { SanityPhoto } from "../types/sanity.ts";
 import CarouselWrapper from "../islands/CarouselWrapper.tsx";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const allImages = await getAllImages(ctx.state.kv);
-    const previewImages = allImages
-      .filter((image) => image.name.includes("--preview"))
-      .slice(0, 10);
-    return { data: previewImages };
+    const [carouselEntries, slugs] = await Promise.all([
+      getCarouselEntries(ctx.state.kv),
+      getAllAlbumSlugs(ctx.state.kv),
+    ]);
+
+    const photoArrays = await Promise.all(
+      slugs.map((slug) => getPhotosByAlbumSlug(ctx.state.kv, slug)),
+    );
+    const allPhotos = photoArrays.flatMap((photos) => photos ?? []);
+    const photoMap = new Map<string, SanityPhoto>(
+      allPhotos.map((p) => [p._id, p]),
+    );
+
+    const carouselPhotos = carouselEntries
+      .map((entry) => photoMap.get(entry.photoId))
+      .filter((p): p is SanityPhoto =>
+        p !== undefined && p.image?.asset?.url !== undefined
+      );
+
+    return { data: carouselPhotos };
   },
 });
 

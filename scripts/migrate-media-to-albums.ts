@@ -12,7 +12,6 @@ interface StrapiFile {
   readonly url: string;
 }
 
-
 interface CreatedAlbum {
   readonly data: {
     readonly documentId: string;
@@ -43,7 +42,10 @@ const extractNumericSuffix = (filename: string): number => {
 };
 
 const sanitizeSlug = (prefix: string): string =>
-  prefix.replace(/&/g, "and").replace(/[^A-Za-z0-9\-_.~]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  prefix.replace(/&/g, "and").replace(/[^A-Za-z0-9\-_.~]/g, "-").replace(
+    /-+/g,
+    "-",
+  ).replace(/^-|-$/g, "");
 
 const toTitleCase = (slug: string): string =>
   slug
@@ -62,7 +64,9 @@ const fetchAllFiles = async (): Promise<ReadonlyArray<StrapiFile>> => {
   const data: StrapiFile[] = await response.json();
 
   if (!Array.isArray(data)) {
-    throw new Error(`Unexpected response shape: ${JSON.stringify(data).substring(0, 200)}`);
+    throw new Error(
+      `Unexpected response shape: ${JSON.stringify(data).substring(0, 200)}`,
+    );
   }
 
   return data;
@@ -122,8 +126,12 @@ const groupFilesByPrefix = (
   return groups;
 };
 
-const sortByNumericSuffix = (files: ReadonlyArray<StrapiFile>): ReadonlyArray<StrapiFile> =>
-  [...files].sort((a, b) => extractNumericSuffix(a.name) - extractNumericSuffix(b.name));
+const sortByNumericSuffix = (
+  files: ReadonlyArray<StrapiFile>,
+): ReadonlyArray<StrapiFile> =>
+  [...files].sort((a, b) =>
+    extractNumericSuffix(a.name) - extractNumericSuffix(b.name)
+  );
 
 const migrate = async (): Promise<void> => {
   console.log("Fetching all files from Strapi Media Library...");
@@ -144,7 +152,9 @@ const migrate = async (): Promise<void> => {
 
     try {
       const albumDocumentId = await createAlbum(title, slug);
-      console.log(`✓ Album "${title}" (${prefix}) — documentId: ${albumDocumentId}`);
+      console.log(
+        `✓ Album "${title}" (${prefix}) — documentId: ${albumDocumentId}`,
+      );
       albumsCreated++;
 
       for (const [index, file] of sorted.entries()) {

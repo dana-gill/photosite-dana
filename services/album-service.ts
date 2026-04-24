@@ -1,187 +1,192 @@
-import type { StrapiAlbum, StrapiAlbumResponse, StrapiAlbumSingleResponse, StrapiPhoto, StrapiPhotoResponse, StrapiPhotoSingleResponse } from "../types/album.ts";
-import type { StrapiImage } from "../types/strapi.ts";
+import { Buffer } from "node:buffer";
+import { createClient } from "@sanity/client";
+import type { SanityAlbum, SanityPhoto } from "../types/sanity.ts";
 
-const STRAPI_API_TOKEN = Deno.env.get("STRAPI_API_TOKEN") ?? "";
-const STRAPI_API_FULL_ADMIN = Deno.env.get("STRAPI_API_FULL_ADMIN") ?? "";
-const STRAPI_URL = Deno.env.get("STRAPI_URL") ?? "";
+const getClient = () => {
+  const projectId = Deno.env.get("SANITY_PROJECT_ID");
+  const apiToken = Deno.env.get("SANITY_API_TOKEN");
 
-export const fetchAlbumBySlug = async (slug: string): Promise<StrapiAlbum | null> => {
-  const url = `${STRAPI_URL}api/albums?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`;
+  if (!projectId) throw new Error("SANITY_PROJECT_ID env var is not set");
+  if (!apiToken) throw new Error("SANITY_API_TOKEN env var is not set");
 
-  const response = await fetch(url, {
-    headers: {
-      "Authorization": `Bearer ${STRAPI_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
+  return createClient({
+    projectId,
+    dataset: Deno.env.get("SANITY_DATASET") ?? "production",
+    apiVersion: "2026-03-14",
+    token: apiToken,
+    useCdn: false,
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to fetch album by slug from Strapi: ${response.statusText}`);
-  }
-
-  const data: StrapiAlbumResponse = await response.json();
-  return data.data[0] ?? null;
 };
 
-export const fetchAllAlbums = async (): Promise<ReadonlyArray<StrapiAlbum>> => {
-  const url = `${STRAPI_URL}api/albums?populate=*`;
+const IMAGE_PROJECTION =
+  `image { asset->{ _id, url, metadata { dimensions, lqip } }, hotspot }`;
 
-  const response = await fetch(url, {
-    headers: {
-      "Authorization": `Bearer ${STRAPI_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
+export const createAlbum = async (
+  title: string,
+  slug: string,
+  description: string,
+): Promise<SanityAlbum> => {
+  const doc = await getClient().create({
+    _type: "album",
+    title,
+    slug: { _type: "slug", current: slug },
+    description: description || null,
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to fetch albums from Strapi: ${response.statusText}`);
-  }
-
-  const data: StrapiAlbumResponse = await response.json();
-  return data.data;
-};
-
-export const fetchPhotosByAlbum = async (albumDocumentId: string): Promise<ReadonlyArray<StrapiPhoto>> => {
-  const url = `${STRAPI_URL}api/photos?filters[album][documentId][$eq]=${encodeURIComponent(albumDocumentId)}&populate=image&sort=order:asc&pagination[pageSize]=100`;
-
-  const response = await fetch(url, {
-    headers: {
-      "Authorization": `Bearer ${STRAPI_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to fetch photos from Strapi: ${response.statusText}`);
-  }
-
-  const data: StrapiPhotoResponse = await response.json();
-  return data.data;
-};
-
-export const updateAlbum = async (
-  documentId: string,
-  fields: { title?: string; description?: string },
-): Promise<StrapiAlbum> => {
-  const url = `${STRAPI_URL}api/albums/${documentId}`;
-
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ data: fields }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to update album in Strapi: ${response.statusText}`);
-  }
-
-  const data: StrapiAlbumSingleResponse = await response.json();
-  return data.data;
-};
-
-export const deleteAlbum = async (documentId: string): Promise<void> => {
-  const url = `${STRAPI_URL}api/albums/${documentId}`;
-
-  const response = await fetch(url, {
-    method: "DELETE",
-    headers: {
-      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to delete album from Strapi: ${response.statusText}`);
-  }
-};
-
-export const createAlbum = async (title: string, slug: string, description: string): Promise<StrapiAlbum> => {
-  const url = `${STRAPI_URL}api/albums`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ data: { title, slug, description } }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to create album in Strapi: ${response.statusText}`);
-  }
-
-  const data: StrapiAlbumSingleResponse = await response.json();
-  return data.data;
+  return {
+    _id: doc._id,
+    title: doc.title,
+    slug: doc.slug.current,
+    description: doc.description ?? null,
+  };
 };
 
 export const createPhoto = async (
-  albumDocumentId: string,
-  imageId: number,
+  albumId: string,
+  assetId: string,
   altTitle: string,
   caption: string,
   order: number,
-): Promise<StrapiPhoto> => {
-  const url = `${STRAPI_URL}api/photos`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ data: { album: albumDocumentId, image: imageId, altTitle, caption, order } }),
+): Promise<SanityPhoto> => {
+  const doc = await getClient().create({
+    _type: "photo",
+    image: { _type: "image", asset: { _type: "reference", _ref: assetId } },
+    altTitle: altTitle || null,
+    caption: caption || null,
+    order,
+    album: { _type: "reference", _ref: albumId },
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to create photo in Strapi: ${response.statusText}`);
-  }
-
-  const data: StrapiPhotoSingleResponse = await response.json();
-  return data.data;
+  return fetchPhotoById(doc._id);
 };
 
-export const uploadMediaFile = async (file: File): Promise<StrapiImage> => {
-  const url = `${STRAPI_URL}api/upload`;
+export const deleteAlbum = async (_id: string): Promise<void> => {
+  await getClient().delete(_id);
+};
 
-  const formData = new FormData();
-  formData.append("files", file);
+export const deletePhoto = async (_id: string): Promise<void> => {
+  await getClient().delete(_id);
+};
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${STRAPI_API_FULL_ADMIN}`,
-    },
-    body: formData,
+export const fetchAlbumBySlug = async (
+  slug: string,
+): Promise<SanityAlbum | null> => {
+  const doc = await getClient().fetch<
+    {
+      _id: string;
+      title: string;
+      slug: { current: string };
+      description: string | null;
+    } | null
+  >(
+    `*[_type == "album" && slug.current == $slug][0]{ _id, title, slug, description }`,
+    { slug },
+  );
+
+  if (!doc) return null;
+
+  return {
+    _id: doc._id,
+    title: doc.title,
+    slug: doc.slug.current,
+    description: doc.description ?? null,
+  };
+};
+
+export const fetchAllAlbums = async (): Promise<ReadonlyArray<SanityAlbum>> => {
+  const docs = await getClient().fetch<
+    ReadonlyArray<{
+      _id: string;
+      title: string;
+      slug: { current: string };
+      description: string | null;
+    }>
+  >(
+    `*[_type == "album"]{ _id, title, slug, description }`,
+  );
+
+  return docs.map((doc) => ({
+    _id: doc._id,
+    title: doc.title,
+    slug: doc.slug.current,
+    description: doc.description ?? null,
+  }));
+};
+
+export const fetchPhotoById = async (_id: string): Promise<SanityPhoto> => {
+  const doc = await getClient().fetch<{
+    _id: string;
+    image: SanityPhoto["image"];
+    altTitle: string | null;
+    caption: string | null;
+    order: number;
+    album: { _ref: string } | null;
+  }>(
+    `*[_type == "photo" && _id == $_id][0]{ _id, ${IMAGE_PROJECTION}, altTitle, caption, order, album }`,
+    { _id },
+  );
+
+  return doc;
+};
+
+export const fetchCarouselPhotoIds = async (): Promise<
+  ReadonlyArray<string>
+> => {
+  const doc = await getClient().fetch<{
+    images: ReadonlyArray<{ _ref: string }> | null;
+  } | null>(
+    `*[_type == "carousel"][0]{ "images": images[]{ _ref } }`,
+  );
+  return doc?.images?.map((img) => img._ref) ?? [];
+};
+
+export const fetchPhotosByAlbum = async (
+  albumId: string,
+): Promise<ReadonlyArray<SanityPhoto>> => {
+  return getClient().fetch<ReadonlyArray<SanityPhoto>>(
+    `*[_type == "photo" && album._ref == $albumId] | order(order asc){ _id, ${IMAGE_PROJECTION}, altTitle, caption, order, album }`,
+    { albumId },
+  );
+};
+
+export const updateAlbum = async (
+  _id: string,
+  fields: { title?: string; description?: string },
+): Promise<SanityAlbum> => {
+  const patch = getClient().patch(_id);
+
+  if (fields.title !== undefined) patch.set({ title: fields.title });
+  if (fields.description !== undefined) {
+    patch.set({ description: fields.description || null });
+  }
+
+  const doc = await patch.commit<{
+    _id: string;
+    title: string;
+    slug: { current: string };
+    description: string | null;
+  }>();
+
+  return {
+    _id: doc._id,
+    title: doc.title,
+    slug: doc.slug.current,
+    description: doc.description ?? null,
+  };
+};
+
+export const updatePhotoOrder = async (
+  _id: string,
+  order: number,
+): Promise<void> => {
+  await getClient().patch(_id).set({ order }).commit();
+};
+
+export const uploadMediaFile = async (file: File): Promise<string> => {
+  const buffer = await file.arrayBuffer();
+  const asset = await getClient().assets.upload("image", Buffer.from(buffer), {
+    filename: file.name,
+    contentType: file.type,
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Strapi API error (${response.status}):`, errorText);
-    throw new Error(`Failed to upload file to Strapi: ${response.statusText}`);
-  }
-
-  const data: ReadonlyArray<StrapiImage> = await response.json();
-  const uploaded = data[0];
-  if (!uploaded) {
-    throw new Error("Strapi upload returned no files");
-  }
-  return uploaded;
+  return asset._id;
 };

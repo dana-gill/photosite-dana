@@ -1,60 +1,30 @@
 import { define, type WorkPreview } from "../../utils.ts";
-import { getImagesByAlbum } from "../../services/cache-manager.ts";
-
-const extractAlbumNameFromFile = async (
-  filePath: string,
-): Promise<string | null> => {
-  const content = await Deno.readTextFile(filePath);
-  const match = content.match(/getImagesByAlbum\([^,]+,\s*["']([^"']+)["']\)/);
-  return match ? match[1] : null;
-};
+import {
+  getAllAlbumSlugs,
+  getPhotosByAlbumSlug,
+} from "../../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const workDir = `${Deno.cwd()}/routes/work`;
-    const previews: WorkPreview[] = [];
+    const slugs = await getAllAlbumSlugs(ctx.state.kv);
 
-    const entries = [];
-    for await (const entry of Deno.readDir(workDir)) {
-      if (entry.isFile && entry.name.endsWith(".tsx")) {
-        entries.push(entry);
-      }
-    }
+    const previewPromises = slugs.map(
+      async (slug): Promise<WorkPreview | null> => {
+        const photos = await getPhotosByAlbumSlug(ctx.state.kv, slug);
+        const firstPhoto = photos?.[0];
+        if (!firstPhoto || !firstPhoto.image?.asset?.metadata) return null;
 
-    const previewPromises = entries.map(async (entry) => {
-      const fileName = entry.name.replace(".tsx", "");
-      const filePath = `${workDir}/${entry.name}`;
-      const albumName = await extractAlbumNameFromFile(filePath);
-
-      if (albumName) {
-        const images = await getImagesByAlbum(ctx.state.kv, albumName);
-        if (images && images.length > 0) {
-          const firstImage = images[0];
-          const imageUrl = firstImage.formats?.medium?.url ??
-            firstImage.formats?.small?.url ??
-            firstImage.url;
-
-          return {
-            href: `/work/${fileName}`,
-            imageUrl,
-            width: firstImage.formats?.medium?.width ??
-              firstImage.formats?.small?.width ??
-              firstImage.width,
-            height: firstImage.formats?.medium?.height ??
-              firstImage.formats?.small?.height ??
-              firstImage.height,
-          };
-        }
-      }
-      return null;
-    });
-
-    const results = await Promise.all(previewPromises);
-    const filteredPreviews = results.filter((preview): preview is WorkPreview =>
-      preview !== null
+        return {
+          href: `/work/${slug}`,
+          imageUrl: firstPhoto.image.asset.url,
+          width: firstPhoto.image.asset.metadata.dimensions.width,
+          height: firstPhoto.image.asset.metadata.dimensions.height,
+        };
+      },
     );
 
-    previews.push(...filteredPreviews);
+    const results = await Promise.all(previewPromises);
+    const previews = results.filter((p): p is WorkPreview => p !== null);
 
     return new Response(JSON.stringify(previews), {
       headers: { "Content-Type": "application/json" },

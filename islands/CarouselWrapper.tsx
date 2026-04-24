@@ -1,9 +1,9 @@
 import { useEffect, useState } from "preact/hooks";
-import type { StrapiImage } from "../types/strapi.ts";
+import type { SanityPhoto } from "../types/sanity.ts";
 import Carousel from "./Carousel.tsx";
 
 interface CarouselWrapperProps {
-  images: ReadonlyArray<StrapiImage>;
+  images: ReadonlyArray<SanityPhoto>;
 }
 
 export default function CarouselWrapper({ images }: CarouselWrapperProps) {
