@@ -3,13 +3,13 @@ import { useState } from "preact/hooks";
 type EditStatus = "idle" | "editing" | "saving" | "error";
 
 interface EditAlbumFieldsProps {
-  readonly documentId: string;
+  readonly albumId: string;
   readonly initialTitle: string;
   readonly initialDescription: string | null;
 }
 
 export default function EditAlbumFields(
-  { documentId, initialTitle, initialDescription }: EditAlbumFieldsProps,
+  { albumId, initialTitle, initialDescription }: EditAlbumFieldsProps,
 ) {
   const [status, setStatus] = useState<EditStatus>("idle");
   const [title, setTitle] = useState(initialTitle);
@@ -40,7 +40,7 @@ export default function EditAlbumFields(
     setStatus("saving");
     setErrorMessage(null);
 
-    const response = await fetch(`/api/admin/albums/${documentId}`, {
+    const response = await fetch(`/api/admin/albums/${albumId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, description }),

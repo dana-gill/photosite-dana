@@ -1,31 +1,9 @@
 import { useState } from "preact/hooks";
-import type { StrapiImage } from "../types/strapi.ts";
+import type { SanityPhoto } from "../types/sanity.ts";
 
 interface CarouselProps {
-  images: ReadonlyArray<StrapiImage>;
+  images: ReadonlyArray<SanityPhoto>;
 }
-
-const buildSrcSet = (image: StrapiImage): string => {
-  const srcSetParts: string[] = [];
-
-  if (image.formats?.small) {
-    srcSetParts.push(`${image.formats.small.url} ${image.formats.small.width}w`);
-  }
-  if (image.formats?.medium) {
-    srcSetParts.push(`${image.formats.medium.url} ${image.formats.medium.width}w`);
-  }
-  if (image.formats?.large) {
-    srcSetParts.push(`${image.formats.large.url} ${image.formats.large.width}w`);
-  }
-
-  srcSetParts.push(`${image.url} ${image.width}w`);
-
-  return srcSetParts.join(", ");
-};
-
-const getDefaultSrc = (image: StrapiImage): string => {
-  return image.formats?.medium?.url ?? image.formats?.small?.url ?? image.url;
-};
 
 export default function Carousel({ images }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -53,22 +31,18 @@ export default function Carousel({ images }: CarouselProps) {
     <div class="w-full flex flex-col items-center gap-4">
       <div class="relative w-full h-[70vh] overflow-hidden">
         <div class="relative w-full h-full">
-          {images.map((image, index) => {
-            const srcSet = buildSrcSet(image);
-            const defaultSrc = getDefaultSrc(image);
+          {images.map((photo, index) => {
             const isActive = index === currentIndex;
             return (
               <div
-                key={image.id}
+                key={photo._id}
                 class={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
                   isActive ? "opacity-100" : "opacity-0"
                 }`}
               >
                 <img
-                  src={defaultSrc}
-                  srcSet={srcSet}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 80vw"
-                  alt={image.alternativeText ?? image.name}
+                  src={photo.image.asset.url}
+                  alt={photo.altTitle ?? photo.caption ?? ""}
                   class="max-w-full max-h-full object-contain"
                   loading={index === 0 ? "eager" : "lazy"}
                 />

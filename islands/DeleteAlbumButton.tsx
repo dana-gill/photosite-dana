@@ -3,11 +3,11 @@ import { useState } from "preact/hooks";
 type DeleteStatus = "idle" | "confirming" | "deleting" | "error";
 
 interface DeleteAlbumButtonProps {
-  readonly documentId: string;
+  readonly albumId: string;
   readonly title: string;
 }
 
-export default function DeleteAlbumButton({ documentId, title }: DeleteAlbumButtonProps) {
+export default function DeleteAlbumButton({ albumId, title }: DeleteAlbumButtonProps) {
   const [status, setStatus] = useState<DeleteStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -24,7 +24,7 @@ export default function DeleteAlbumButton({ documentId, title }: DeleteAlbumButt
     setStatus("deleting");
     setErrorMessage(null);
 
-    const response = await fetch(`/api/admin/albums/${documentId}`, {
+    const response = await fetch(`/api/admin/albums/${albumId}`, {
       method: "DELETE",
     });
 

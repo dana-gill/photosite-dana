@@ -22,11 +22,11 @@ const refreshCache = async (): Promise<void> => {
   await fetch("/api/admin/cache/refresh", { method: "POST" });
 };
 
-const uploadPhoto = async (albumDocumentId: string, file: File): Promise<void> => {
+const uploadPhoto = async (albumId: string, file: File): Promise<void> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`/api/admin/albums/${albumDocumentId}/photos`, {
+  const response = await fetch(`/api/admin/albums/${albumId}/photos`, {
     method: "POST",
     body: formData,
   });
@@ -149,20 +149,20 @@ export default function CreateAlbumForm() {
     }
 
     const albumBody = await albumResponse.json();
-    const documentId: string = albumBody.data.documentId;
+    const albumId: string = albumBody.data._id;
 
     if (stagedFiles.length > 0) {
       await stagedFiles.reduce<Promise<void>>(async (chain, staged, index) => {
         await chain;
         setUploadProgress(`Uploading photo ${index + 1} of ${stagedFiles.length}…`);
-        await uploadPhoto(documentId, staged.file);
+        await uploadPhoto(albumId, staged.file);
       }, Promise.resolve());
     }
 
     setUploadProgress("Refreshing cache…");
     await refreshCache();
 
-    setCreatedDocumentId(documentId);
+    setCreatedDocumentId(albumId);
     setTitle("");
     setSlug("");
     setSlugManuallyEdited(false);

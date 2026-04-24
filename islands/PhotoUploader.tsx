@@ -2,7 +2,7 @@ import { useState } from "preact/hooks";
 import { UPLOAD_END_EVENT, UPLOAD_START_EVENT } from "./AlbumPhotoSorter.tsx";
 
 interface PhotoUploaderProps {
-  readonly albumDocumentId: string;
+  readonly albumId: string;
 }
 
 type UploadStatus = "pending" | "uploading" | "done" | "error";
@@ -23,11 +23,11 @@ const refreshCache = async (): Promise<void> => {
   await fetch("/api/admin/cache/refresh", { method: "POST" });
 };
 
-const uploadFile = async (albumDocumentId: string, file: File): Promise<void> => {
+const uploadFile = async (albumId: string, file: File): Promise<void> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`/api/admin/albums/${albumDocumentId}/photos`, {
+  const response = await fetch(`/api/admin/albums/${albumId}/photos`, {
     method: "POST",
     body: formData,
   });
@@ -38,7 +38,7 @@ const uploadFile = async (albumDocumentId: string, file: File): Promise<void> =>
   }
 };
 
-export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
+export default function PhotoUploader({ albumId }: PhotoUploaderProps) {
   const [uploads, setUploads] = useState<ReadonlyArray<FileUploadState>>([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -68,7 +68,7 @@ export default function PhotoUploader({ albumDocumentId }: PhotoUploaderProps) {
         await chain;
         setFileStatus(index, "uploading", null);
         try {
-          await uploadFile(albumDocumentId, upload.file);
+          await uploadFile(albumId, upload.file);
           setFileStatus(index, "done", null);
           finalStatuses.push("done");
         } catch (err) {

@@ -1,24 +1,23 @@
 import Sortable from "sortablejs";
 import { useEffect, useRef, useState } from "preact/hooks";
-import type { CarouselEntry } from "../types/carousel.ts";
-import type { StrapiImage } from "../types/strapi.ts";
+import type { CarouselEntry, SanityPhoto } from "../types/sanity.ts";
 import { CAROUSEL_LIBRARY_PAGE_SIZE } from "./consts.ts";
 
 interface CarouselEditorProps {
-  readonly allImages: ReadonlyArray<StrapiImage>;
+  readonly allPhotos: ReadonlyArray<SanityPhoto>;
   readonly initialEntries: ReadonlyArray<CarouselEntry>;
 }
 
 interface CarouselItem {
-  readonly imageId: number;
-  readonly name: string;
+  readonly photoId: string;
   readonly thumbnailUrl: string;
+  readonly label: string;
 }
 
-const toCarouselItem = (image: StrapiImage): CarouselItem => ({
-  imageId: image.id,
-  name: image.name,
-  thumbnailUrl: image.formats?.thumbnail?.url ?? image.url,
+const toCarouselItem = (photo: SanityPhoto): CarouselItem => ({
+  photoId: photo._id,
+  thumbnailUrl: photo.image.asset.url,
+  label: photo.altTitle ?? photo.caption ?? photo._id,
 });
 
 const renderCarouselEmpty = () => (
@@ -27,34 +26,35 @@ const renderCarouselEmpty = () => (
   </p>
 );
 
-const renderLibraryImageButton = (
-  img: StrapiImage,
+const renderLibraryPhotoButton = (
+  photo: SanityPhoto,
   inCarousel: boolean,
-  onAdd: (id: number) => void,
+  onAdd: (id: string) => void,
 ) => {
-  const thumbnailUrl = img.formats?.thumbnail?.url ?? img.url;
+  const thumbnailUrl = photo.image.asset.url;
   const buttonClass =
     `w-full relative rounded overflow-hidden border transition-opacity ${
       inCarousel
         ? "border-gray-200 opacity-30 cursor-default"
         : "border-transparent hover:border-gray-400 cursor-pointer"
     }`;
+  const label = photo.altTitle ?? photo.caption ?? photo._id;
   const ariaLabel = inCarousel
-    ? `${img.name} (already in carousel)`
-    : `Add ${img.name} to carousel`;
+    ? `${label} (already in carousel)`
+    : `Add ${label} to carousel`;
 
   return (
-    <li key={img.id}>
+    <li key={photo._id}>
       <button
         type="button"
-        onClick={() => onAdd(img.id)}
+        onClick={() => onAdd(photo._id)}
         disabled={inCarousel}
         class={buttonClass}
         aria-label={ariaLabel}
       >
         <img
           src={thumbnailUrl}
-          alt={img.name}
+          alt={label}
           class="w-full h-28 object-cover"
         />
         {!inCarousel && (
@@ -98,14 +98,14 @@ const renderPagination = (
 };
 
 export default function CarouselEditor(
-  { allImages, initialEntries }: CarouselEditorProps,
+  { allPhotos, initialEntries }: CarouselEditorProps,
 ) {
-  const imageMap = new Map(allImages.map((img) => [img.id, img]));
+  const photoMap = new Map(allPhotos.map((p) => [p._id, p]));
 
   const [items, setItems] = useState<CarouselItem[]>(
     initialEntries
-      .map((entry) => imageMap.get(entry.imageId))
-      .filter((img) => img !== undefined)
+      .map((entry) => photoMap.get(entry.photoId))
+      .filter((p): p is SanityPhoto => p !== undefined)
       .map(toCarouselItem),
   );
   const [saving, setSaving] = useState(false);
@@ -126,8 +126,8 @@ export default function CarouselEditor(
         const nodes = Array.from(listRef.current.querySelectorAll("[data-id]"));
         setItems((prev) =>
           nodes.map((node) => {
-            const id = Number(node.getAttribute("data-id"));
-            return prev.find((item) => item.imageId === id) ?? prev[0];
+            const id = node.getAttribute("data-id") ?? "";
+            return prev.find((item) => item.photoId === id) ?? prev[0];
           })
         );
       },
@@ -139,17 +139,17 @@ export default function CarouselEditor(
     };
   }, []);
 
-  const handleAdd = (imageId: number) => {
-    const image = imageMap.get(imageId);
-    if (!image) return;
-    const alreadyAdded = items.some((item) => item.imageId === imageId);
+  const handleAdd = (photoId: string) => {
+    const photo = photoMap.get(photoId);
+    if (!photo) return;
+    const alreadyAdded = items.some((item) => item.photoId === photoId);
     if (alreadyAdded) return;
-    setItems((prev) => [...prev, toCarouselItem(image)]);
+    setItems((prev) => [...prev, toCarouselItem(photo)]);
     setSaved(false);
   };
 
-  const handleRemove = (imageId: number) => {
-    setItems((prev) => prev.filter((item) => item.imageId !== imageId));
+  const handleRemove = (photoId: string) => {
+    setItems((prev) => prev.filter((item) => item.photoId !== photoId));
     setSaved(false);
   };
 
@@ -162,7 +162,7 @@ export default function CarouselEditor(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        entries: items.map((item) => ({ imageId: item.imageId })),
+        entries: items.map((item) => ({ photoId: item.photoId })),
       }),
     });
 
@@ -176,9 +176,9 @@ export default function CarouselEditor(
     setSaved(true);
   };
 
-  const carouselIds = new Set(items.map((item) => item.imageId));
-  const totalPages = Math.ceil(allImages.length / CAROUSEL_LIBRARY_PAGE_SIZE);
-  const pageImages = allImages.slice(
+  const carouselIds = new Set(items.map((item) => item.photoId));
+  const totalPages = Math.ceil(allPhotos.length / CAROUSEL_LIBRARY_PAGE_SIZE);
+  const pagePhotos = allPhotos.slice(
     libraryPage * CAROUSEL_LIBRARY_PAGE_SIZE,
     (libraryPage + 1) * CAROUSEL_LIBRARY_PAGE_SIZE,
   );
@@ -204,18 +204,18 @@ export default function CarouselEditor(
           >
             {items.map((item) => (
               <li
-                key={item.imageId}
-                data-id={item.imageId}
+                key={item.photoId}
+                data-id={item.photoId}
                 class="relative bg-white border border-gray-200 rounded overflow-hidden select-none cursor-grab"
               >
                 <img
                   src={item.thumbnailUrl}
-                  alt={item.name}
+                  alt={item.label}
                   class="w-full h-28 object-cover"
                 />
                 <button
                   type="button"
-                  onClick={() => handleRemove(item.imageId)}
+                  onClick={() => handleRemove(item.photoId)}
                   class="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white text-xs rounded"
                   aria-label="Remove from carousel"
                 >
@@ -242,7 +242,7 @@ export default function CarouselEditor(
 
       <section>
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-medium text-gray-700">All Images</h2>
+          <h2 class="text-sm font-medium text-gray-700">All Photos</h2>
           {renderPagination(
             libraryPage,
             totalPages,
@@ -252,8 +252,8 @@ export default function CarouselEditor(
         </div>
 
         <ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          {pageImages.map((img) =>
-            renderLibraryImageButton(img, carouselIds.has(img.id), handleAdd)
+          {pagePhotos.map((photo) =>
+            renderLibraryPhotoButton(photo, carouselIds.has(photo._id), handleAdd)
           )}
         </ul>
       </section>

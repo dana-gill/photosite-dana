@@ -1,4 +1,4 @@
-import type { StrapiPhoto } from "../types/album.ts";
+import type { SanityPhoto } from "../types/sanity.ts";
 import Sortable from "sortablejs";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { UPLOAD_END_EVENT, UPLOAD_START_EVENT } from "./consts.ts";
@@ -6,12 +6,12 @@ import { UPLOAD_END_EVENT, UPLOAD_START_EVENT } from "./consts.ts";
 export { UPLOAD_END_EVENT, UPLOAD_START_EVENT };
 
 interface AlbumPhotoSorterProps {
-  readonly albumDocumentId: string;
-  readonly photos: ReadonlyArray<StrapiPhoto>;
+  readonly albumId: string;
+  readonly photos: ReadonlyArray<SanityPhoto>;
 }
 
 interface SortablePhoto {
-  readonly documentId: string;
+  readonly _id: string;
   readonly imageUrl: string;
   readonly altTitle: string | null;
   readonly caption: string | null;
@@ -19,14 +19,14 @@ interface SortablePhoto {
 }
 
 export default function AlbumPhotoSorter(
-  { albumDocumentId, photos }: AlbumPhotoSorterProps,
+  { albumId, photos }: AlbumPhotoSorterProps,
 ) {
   const listRef = useRef<HTMLUListElement>(null);
   const sortableRef = useRef<Sortable | null>(null);
   const [items, setItems] = useState<SortablePhoto[]>(
     photos.map((p) => ({
-      documentId: p.documentId,
-      imageUrl: p.image.formats?.thumbnail?.url ?? p.image.url,
+      _id: p._id,
+      imageUrl: p.image.asset.url,
       altTitle: p.altTitle,
       caption: p.caption,
       order: p.order,
@@ -47,8 +47,8 @@ export default function AlbumPhotoSorter(
         const nodes = Array.from(listRef.current.querySelectorAll("[data-id]"));
         setItems((prev) =>
           nodes.map((node, index) => {
-            const docId = node.getAttribute("data-id") ?? "";
-            const found = prev.find((p) => p.documentId === docId);
+            const id = node.getAttribute("data-id") ?? "";
+            const found = prev.find((p) => p._id === id);
             return { ...(found ?? prev[index]), order: index };
           })
         );
@@ -80,13 +80,11 @@ export default function AlbumPhotoSorter(
     };
   }, []);
 
-  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>(
-    [],
-  );
+  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>([]);
 
-  const handleDelete = (photoDocumentId: string) => {
-    setPendingDeletes((prev) => [...prev, photoDocumentId]);
-    setItems((prev) => prev.filter((p) => p.documentId !== photoDocumentId));
+  const handleDelete = (photoId: string) => {
+    setPendingDeletes((prev) => [...prev, photoId]);
+    setItems((prev) => prev.filter((p) => p._id !== photoId));
     setSaved(false);
   };
 
@@ -96,11 +94,9 @@ export default function AlbumPhotoSorter(
     setSaved(false);
 
     const deleteResults = await Promise.all(
-      pendingDeletes.map((photoDocumentId) =>
+      pendingDeletes.map((photoId) =>
         fetch(
-          `/api/admin/albums/${albumDocumentId}/photos?photoDocumentId=${
-            encodeURIComponent(photoDocumentId)
-          }`,
+          `/api/admin/albums/${albumId}/photos?photoDocumentId=${encodeURIComponent(photoId)}`,
           { method: "DELETE" },
         )
       ),
@@ -113,13 +109,13 @@ export default function AlbumPhotoSorter(
     }
 
     const reorderResponse = await fetch(
-      `/api/admin/albums/${albumDocumentId}/reorder`,
+      `/api/admin/albums/${albumId}/reorder`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           photos: items.map((p) => ({
-            documentId: p.documentId,
+            _id: p._id,
             order: p.order,
           })),
         }),
@@ -145,8 +141,8 @@ export default function AlbumPhotoSorter(
       >
         {items.map((photo) => (
           <li
-            key={photo.documentId}
-            data-id={photo.documentId}
+            key={photo._id}
+            data-id={photo._id}
             class={`relative bg-white border border-gray-200 rounded overflow-hidden select-none ${
               uploadingDisabled
                 ? "cursor-not-allowed opacity-50"
@@ -165,7 +161,7 @@ export default function AlbumPhotoSorter(
             )}
             <button
               type="button"
-              onClick={() => handleDelete(photo.documentId)}
+              onClick={() => handleDelete(photo._id)}
               disabled={uploadingDisabled}
               class="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/50 hover:bg-black/70 text-white text-xs rounded disabled:opacity-50"
               aria-label="Delete photo"
