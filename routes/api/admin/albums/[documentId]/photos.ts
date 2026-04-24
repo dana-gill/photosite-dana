@@ -15,7 +15,7 @@ export const handler = define.handlers({
       });
     }
 
-    const albumDocumentId = ctx.params.documentId;
+    const albumId = ctx.params.documentId;
     const formData = await ctx.req.formData();
     const file = formData.get("file");
     const altTitle = formData.get("altTitle");
@@ -28,13 +28,13 @@ export const handler = define.handlers({
       });
     }
 
-    const existingPhotos = await fetchPhotosByAlbum(albumDocumentId);
+    const existingPhotos = await fetchPhotosByAlbum(albumId);
     const nextOrder = existingPhotos.length;
 
-    const uploaded = await uploadMediaFile(file);
+    const assetId = await uploadMediaFile(file);
     const photo = await createPhoto(
-      albumDocumentId,
-      uploaded.id,
+      albumId,
+      assetId,
       typeof altTitle === "string" ? altTitle : "",
       typeof caption === "string" ? caption : "",
       nextOrder,
@@ -58,16 +58,16 @@ export const handler = define.handlers({
     }
 
     const url = new URL(ctx.req.url);
-    const photoDocumentId = url.searchParams.get("photoDocumentId");
+    const photoId = url.searchParams.get("photoDocumentId");
 
-    if (!photoDocumentId) {
+    if (!photoId) {
       return new Response(JSON.stringify({ error: "photoDocumentId is required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    await deletePhoto(photoDocumentId);
+    await deletePhoto(photoId);
     await refreshAlbumCache(ctx.state.kv);
 
     return new Response(JSON.stringify({ success: true }), {

@@ -1,8 +1,5 @@
 import { define } from "../../../utils.ts";
-import {
-  getAllAlbums,
-  getImagesByAlbum,
-} from "../../../services/cache-manager.ts";
+import { getAllAlbumSlugs, getPhotosByAlbumSlug } from "../../../services/cache-manager.ts";
 
 const PHOTOSITE_TOKEN = Deno.env.get("PHOTOSITE_TOKEN") ?? "";
 
@@ -18,9 +15,7 @@ export const handler = define.handlers({
 
     if (token !== PHOTOSITE_TOKEN || !PHOTOSITE_TOKEN) {
       return new Response(
-        JSON.stringify({
-          error: "Unauthorized",
-        }),
+        JSON.stringify({ error: "Unauthorized" }),
         {
           status: 401,
           headers: { "Content-Type": "application/json" },
@@ -28,14 +23,14 @@ export const handler = define.handlers({
       );
     }
 
-    const albumNames = await getAllAlbums(ctx.state.kv);
+    const slugs = await getAllAlbumSlugs(ctx.state.kv);
 
     const albumSummaries = await Promise.all(
-      albumNames.map(async (name): Promise<AlbumSummary> => {
-        const images = await getImagesByAlbum(ctx.state.kv, name);
+      slugs.map(async (slug): Promise<AlbumSummary> => {
+        const photos = await getPhotosByAlbumSlug(ctx.state.kv, slug);
         return {
-          name,
-          imageCount: images?.length ?? 0,
+          name: slug,
+          imageCount: photos?.length ?? 0,
         };
       }),
     );

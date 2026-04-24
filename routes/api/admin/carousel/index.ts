@@ -1,7 +1,7 @@
 import { define } from "../../../../utils.ts";
 import { isAdminAuthorized } from "../../../../services/admin-auth-service.ts";
 import { saveCarouselEntries } from "../../../../services/cache-manager.ts";
-import type { CarouselEntry } from "../../../../types/carousel.ts";
+import type { CarouselEntry } from "../../../../types/sanity.ts";
 
 interface SaveCarouselBody {
   readonly entries: ReadonlyArray<CarouselEntry>;
