@@ -1,0 +1,15 @@
+name: Cache Refresh
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger cache refresh
+        run: |
+          curl -X POST https://www.danagill.photography/api/cache/refresh \
+            -H "Authorization: Bearer ${{ secrets.PHOTOSITE_TOKEN }}"
