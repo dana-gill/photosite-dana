@@ -13,3 +13,11 @@ jobs:
         run: |
           curl -X POST https://www.danagill.photography/api/cache/refresh \
             -H "Authorization: Bearer ${{ secrets.PHOTOSITE_TOKEN }}"
+
+      - name: Verify homepage loads
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://www.danagill.photography)
+          if [ "$status" != "200" ]; then
+            echo "Homepage returned $status"
+            exit 1
+          fi
