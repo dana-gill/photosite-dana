@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { createClient } from "@sanity/client";
 import type { SanityAlbum, SanityPhoto } from "../types/sanity.ts";
 
@@ -178,8 +179,10 @@ export const updatePhotoOrder = async (
 };
 
 export const uploadMediaFile = async (file: File): Promise<string> => {
-  const asset = await client.assets.upload("image", file, {
+  const buffer = await file.arrayBuffer();
+  const asset = await client.assets.upload("image", Buffer.from(buffer), {
     filename: file.name,
+    contentType: file.type,
   });
   return asset._id;
 };
