@@ -1,6 +1,11 @@
 import Sortable from "sortablejs";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { CarouselEntry, SanityPhoto } from "../types/sanity.ts";
+import {
+  CATEGORIES,
+  type Category,
+  CATEGORY_LABELS,
+} from "../types/category.ts";
 import { CAROUSEL_LIBRARY_PAGE_SIZE } from "./consts.ts";
 
 interface CarouselEditorProps {
@@ -10,15 +15,41 @@ interface CarouselEditorProps {
 
 interface CarouselItem {
   readonly photoId: string;
-  readonly thumbnailUrl: string;
+  readonly thumbnailUrl: string | null;
   readonly label: string;
+  readonly category: Category | null;
 }
 
 const toCarouselItem = (photo: SanityPhoto): CarouselItem => ({
   photoId: photo._id,
   thumbnailUrl: photo.image.asset.url,
   label: photo.altTitle ?? photo.caption ?? photo._id,
+  category: photo.category,
 });
+
+const toMissingItem = (photoId: string): CarouselItem => ({
+  photoId,
+  thumbnailUrl: null,
+  label: "Missing photo",
+  category: null,
+});
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const readErrorMessage = async (response: Response): Promise<string> => {
+  const fallback = "Failed to save. Please try again.";
+  if (response.status !== 400) return fallback;
+  const body: unknown = await response.json().catch(() => null);
+  if (isRecord(body) && typeof body.error === "string") return body.error;
+  return fallback;
+};
+
+const renderCategoryBadge = (category: Category) => (
+  <span class="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 text-white text-[10px] rounded">
+    {CATEGORY_LABELS[category]}
+  </span>
+);
 
 const renderCarouselEmpty = () => (
   <p class="text-sm text-gray-400 italic py-6 border border-dashed border-gray-200 rounded text-center">
@@ -60,6 +91,7 @@ const renderLibraryPhotoButton = (
         {!inCarousel && (
           <div class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors" />
         )}
+        {renderCategoryBadge(photo.category)}
       </button>
     </li>
   );
@@ -103,10 +135,15 @@ export default function CarouselEditor(
   const photoMap = new Map(allPhotos.map((p) => [p._id, p]));
 
   const [items, setItems] = useState<CarouselItem[]>(
-    initialEntries
-      .map((entry) => photoMap.get(entry.photoId))
-      .filter((p): p is SanityPhoto => p !== undefined)
-      .map(toCarouselItem),
+    initialEntries.map((entry) => {
+      const photo = photoMap.get(entry.photoId);
+      return photo === undefined
+        ? toMissingItem(entry.photoId)
+        : toCarouselItem(photo);
+    }),
+  );
+  const [activeCategory, setActiveCategory] = useState<Category>(
+    CATEGORIES[0],
   );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -153,7 +190,7 @@ export default function CarouselEditor(
     setSaved(false);
   };
 
-  const handleSave = async () => {
+  const saveItems = async (toSave: ReadonlyArray<CarouselItem>) => {
     setSaving(true);
     setError(null);
     setSaved(false);
@@ -162,23 +199,44 @@ export default function CarouselEditor(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        entries: items.map((item) => ({ photoId: item.photoId })),
+        entries: toSave.map((item) => ({ photoId: item.photoId })),
       }),
     });
 
     setSaving(false);
 
     if (!response.ok) {
-      setError("Failed to save. Please try again.");
+      setError(await readErrorMessage(response));
       return;
     }
 
     setSaved(true);
   };
 
+  const handleSave = () => saveItems(items);
+
+  const handleRemoveMissing = () => {
+    const remaining = items.filter((item) => item.thumbnailUrl !== null);
+    setItems(remaining);
+    return saveItems(remaining);
+  };
+
+  const handleSelectCategory = (category: Category) => {
+    setActiveCategory(category);
+    setLibraryPage(0);
+  };
+
+  const missingCount = items.filter((item) => item.thumbnailUrl === null)
+    .length;
+  const libraryPhotos = allPhotos
+    .filter((photo) => photo.category === activeCategory)
+    .sort((a, b) => a.order - b.order);
+
   const carouselIds = new Set(items.map((item) => item.photoId));
-  const totalPages = Math.ceil(allPhotos.length / CAROUSEL_LIBRARY_PAGE_SIZE);
-  const pagePhotos = allPhotos.slice(
+  const totalPages = Math.ceil(
+    libraryPhotos.length / CAROUSEL_LIBRARY_PAGE_SIZE,
+  );
+  const pagePhotos = libraryPhotos.slice(
     libraryPage * CAROUSEL_LIBRARY_PAGE_SIZE,
     (libraryPage + 1) * CAROUSEL_LIBRARY_PAGE_SIZE,
   );
@@ -197,6 +255,19 @@ export default function CarouselEditor(
         <h2 class="text-sm font-medium text-gray-700 mb-3">
           Carousel ({items.length} {items.length === 1 ? "image" : "images"})
         </h2>
+        {missingCount > 0 && (
+          <div class="flex items-center justify-between gap-4 mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
+            <span>{missingCount} carousel photos no longer exist</span>
+            <button
+              type="button"
+              onClick={handleRemoveMissing}
+              disabled={saving}
+              class="px-3 py-1 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50"
+            >
+              Remove missing
+            </button>
+          </div>
+        )}
         {items.length === 0 ? renderCarouselEmpty() : (
           <ul
             ref={listRef}
@@ -208,11 +279,22 @@ export default function CarouselEditor(
                 data-id={item.photoId}
                 class="relative bg-white border border-gray-200 rounded overflow-hidden select-none cursor-grab"
               >
-                <img
-                  src={item.thumbnailUrl}
-                  alt={item.label}
-                  class="w-full h-28 object-cover"
-                />
+                {item.thumbnailUrl === null || item.category === null
+                  ? (
+                    <div class="w-full h-28 bg-gray-200 flex items-center justify-center text-xs text-gray-500">
+                      Missing photo
+                    </div>
+                  )
+                  : (
+                    <>
+                      <img
+                        src={item.thumbnailUrl}
+                        alt={item.label}
+                        class="w-full h-28 object-cover"
+                      />
+                      {renderCategoryBadge(item.category)}
+                    </>
+                  )}
                 <button
                   type="button"
                   onClick={() => handleRemove(item.photoId)}
@@ -242,7 +324,24 @@ export default function CarouselEditor(
 
       <section>
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-medium text-gray-700">All Photos</h2>
+          <div role="tablist" class="flex gap-2">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category}
+                type="button"
+                role="tab"
+                aria-selected={category === activeCategory}
+                onClick={() => handleSelectCategory(category)}
+                class={`px-3 py-1 text-sm rounded border ${
+                  category === activeCategory
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {CATEGORY_LABELS[category]}
+              </button>
+            ))}
+          </div>
           {renderPagination(
             libraryPage,
             totalPages,

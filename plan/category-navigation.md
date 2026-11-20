@@ -192,7 +192,7 @@ The admin category page is the main place to set the order.
 - **Studio:** You can also edit the `order` number directly in Studio. Then refresh the cache (`POST /api/admin/cache/refresh`). The Step 1 desk lists sort by `order`, so the Studio shows the same order as the site.
 - **Optional:** For drag and drop in Studio too, add `@sanity/orderable-document-list` to `photosite-sanity/package.json`. This plugin uses its own `orderRank` field. Choose only one of `order` or `orderRank` as the source of truth. Do not use both. This plan uses `order`.
 
-### Step 12 — Rebuild the home page carousel
+### **[DONE]** Step 12 — Rebuild the home page carousel
 **Files:** `photosite-sanity/schemaTypes/carousel.ts`, `routes/api/admin/carousel/index.ts`, `islands/CarouselEditor.tsx`, `routes/admin/carousel.tsx`, `routes/index.tsx`, `services/photo-service.ts`
 
 After the reset, most photos in the current carousel will not exist. The carousel must be set again from the new category photos, and it must not break when a photo is deleted.

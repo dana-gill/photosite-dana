@@ -6,7 +6,10 @@ import {
   deletePhoto,
   uploadMediaFile,
 } from "../../../../../services/photo-service.ts";
-import { refreshCategory } from "../../../../../services/image-service.ts";
+import {
+  refreshCarousel,
+  refreshCategory,
+} from "../../../../../services/image-service.ts";
 
 export const handler = define.handlers({
   POST: async (ctx) => {
@@ -88,7 +91,10 @@ export const handler = define.handlers({
     }
 
     await deletePhoto(photoId);
-    await refreshCategory(ctx.state.kv, category);
+    await Promise.all([
+      refreshCategory(ctx.state.kv, category),
+      refreshCarousel(ctx.state.kv),
+    ]);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

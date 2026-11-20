@@ -35,3 +35,8 @@ export const refreshCategory = async (
 ): Promise<void> => {
   await saveCategoryPhotos(kv, category, await fetchPhotosByCategory(category));
 };
+
+export const refreshCarousel = async (kv: Deno.Kv): Promise<void> => {
+  const photoIds = await fetchCarouselPhotoIds();
+  await saveCarouselEntries(kv, photoIds.map((photoId) => ({ photoId })));
+};

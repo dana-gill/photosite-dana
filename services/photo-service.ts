@@ -53,8 +53,45 @@ export const createPhoto = async (
   return photo;
 };
 
+const SAFE_ID_PATTERN = /^[A-Za-z0-9._-]+$/;
+
 export const deletePhoto = async (_id: string): Promise<void> => {
-  await getClient().delete(_id);
+  if (!SAFE_ID_PATTERN.test(_id)) throw new Error(`Invalid photo id: ${_id}`);
+  const client = getClient();
+  const inCarousel = await client.fetch<boolean>(
+    'count(*[_id == "carousel" && $id in images[]._ref]) > 0',
+    { id: _id },
+  );
+  const transaction = inCarousel
+    ? client.transaction().patch(
+      "carousel",
+      (p) => p.unset([`images[_ref == "${_id}"]`]),
+    )
+    : client.transaction();
+  await transaction.delete(_id).commit();
+};
+
+export const fetchExistingPhotoIds = (
+  ids: ReadonlyArray<string>,
+): Promise<ReadonlyArray<string>> =>
+  getClient().fetch<ReadonlyArray<string>>(
+    `*[_type == "photo" && _id in $ids]._id`,
+    { ids },
+  );
+
+export const saveCarousel = async (
+  photoIds: ReadonlyArray<string>,
+): Promise<void> => {
+  await getClient().createOrReplace({
+    _id: "carousel",
+    _type: "carousel",
+    images: photoIds.map((photoId, index) => ({
+      _key: `${index}-${photoId}`.replace(/[^A-Za-z0-9-]/g, "-").slice(0, 64),
+      _type: "reference",
+      _ref: photoId,
+      _weak: true,
+    })),
+  });
 };
 
 export const fetchPhotoById = (_id: string): Promise<SanityPhoto | null> =>
