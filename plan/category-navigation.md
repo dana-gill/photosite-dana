@@ -87,7 +87,7 @@ The original Studio code is lost. The content is in Sanity project `serh8kfd`, n
    - Hosted Studio: `npx sanity deploy` (`https://<studioHost>.sanity.studio`).
 9. **Old content:** Until Step 14 runs, old `album` docs and the `photo.album` fields show as unknown types or fields in the Studio. This is expected.
 
-### Step 2 — Add the category constants and type
+### **[DONE]** Step 2 — Add the category constants and type
 **File:** `types/category.ts` (new)
 
 ```ts
