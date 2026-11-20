@@ -12,3 +12,15 @@ node_modules/
 vendor/
 
 dev.log
+
+# Sanity Studio build output
+photosite-sanity/.sanity/
+photosite-sanity/dist/
+
+# Local photos for scripts/import-photos.ts (Sanity is the stored copy)
+assets/architecture/
+assets/couples/
+assets/portraits/
+assets/about/
+assets/carousel/
+.DS_Store

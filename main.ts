@@ -1,14 +1,10 @@
 /// <reference lib="deno.unstable" />
 
 import { App, staticFiles } from "fresh";
-import type { State, WorkPreview } from "./utils.ts";
-import { refreshAlbumCache } from "./services/image-service.ts";
-import {
-  getAlbumBySlug,
-  getAllAlbumSlugs,
-  getPhotosByAlbumSlug,
-} from "./services/cache-manager.ts";
-import type { NavLink } from "./types/nav.ts";
+import type { State } from "./utils.ts";
+import { refreshCategoryCache } from "./services/image-service.ts";
+import { getAbout, getPhotosByCategory } from "./services/cache-manager.ts";
+import { CATEGORIES } from "./types/category.ts";
 
 export const app = new App<State>();
 
@@ -17,15 +13,22 @@ const kv = await Deno.openKv();
 console.log("Checking cache status...");
 
 try {
-  const slugs = await getAllAlbumSlugs(kv);
+  const photoArrays = await Promise.all(
+    CATEGORIES.map((category) => getPhotosByCategory(kv, category)),
+  );
 
-  if (slugs.length === 0) {
+  if (photoArrays.every((photos) => photos.length === 0)) {
     console.log("Cache empty — fetching from Sanity...");
-    await refreshAlbumCache(kv);
-    const refreshedSlugs = await getAllAlbumSlugs(kv);
-    console.log(`Cache initialized: ${refreshedSlugs.length} albums`);
+    await refreshCategoryCache(kv);
+    const refreshed = await Promise.all(
+      CATEGORIES.map((category) => getPhotosByCategory(kv, category)),
+    );
+    refreshed.forEach((photos, index) =>
+      console.log(`Cache initialized: ${CATEGORIES[index]} ${photos.length}`)
+    );
   } else {
-    console.log(`Cache is fresh: ${slugs.length} albums`);
+    const total = photoArrays.reduce((sum, photos) => sum + photos.length, 0);
+    console.log(`Cache is fresh: ${total} photos`);
   }
 } catch (error) {
   console.error("Failed to initialize cache:", error);
@@ -35,50 +38,15 @@ try {
   );
 }
 
-const fetchWorkLinks = async (
-  kv: Deno.Kv,
-): Promise<ReadonlyArray<NavLink>> => {
-  const slugs = await getAllAlbumSlugs(kv);
-  const albums = await Promise.all(
-    slugs.map((slug) => getAlbumBySlug(kv, slug)),
-  );
-  return albums
-    .filter((album): album is NonNullable<typeof album> => album !== null)
-    .map((album) => ({ href: `/work/${album.slug}`, label: album.title }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-};
-
-const fetchWorkPreviews = async (
-  kv: Deno.Kv,
-): Promise<ReadonlyArray<WorkPreview>> => {
-  const slugs = await getAllAlbumSlugs(kv);
-  const previews = await Promise.all(
-    slugs.map(async (slug): Promise<WorkPreview | null> => {
-      const photos = await getPhotosByAlbumSlug(kv, slug);
-      const first = photos?.[0];
-      if (!first || !first.image?.asset?.metadata) return null;
-      return {
-        height: first.image.asset.metadata.dimensions.height,
-        href: `/work/${slug}`,
-        imageUrl: first.image.asset.url,
-        width: first.image.asset.metadata.dimensions.width,
-      };
-    }),
-  );
-  return previews.filter((p): p is WorkPreview => p !== null);
-};
-
 app.use(staticFiles());
 
 app.use(async (ctx) => {
-  const [workLinks, workPreviews] = await Promise.all([
-    fetchWorkLinks(kv),
-    fetchWorkPreviews(kv),
-  ]);
   ctx.state.shared = "hello";
   ctx.state.kv = kv;
-  ctx.state.workLinks = workLinks;
-  ctx.state.workPreviews = workPreviews;
+  const about = await getAbout(kv);
+  ctx.state.ogImageUrl = about
+    ? `${about.image.asset.url}?w=1200&fm=jpg`
+    : null;
   return await ctx.next();
 });
 

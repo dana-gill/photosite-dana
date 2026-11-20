@@ -7,10 +7,11 @@
     "build": "vite build",
     "start": "deno serve -A --unstable-kv --env _fresh/server.js",
     "update": "deno run -A -r jsr:@fresh/update .",
-    "deploy": "deployctl deploy --unstable-kv"
+    "deploy": "deployctl deploy --unstable-kv",
+    "studio": "cd photosite-sanity && npm run dev"
   },
   "lint": { "rules": { "tags": ["fresh", "recommended"] } },
-  "exclude": ["**/_fresh/*"],
+  "exclude": ["**/_fresh/*", "photosite-sanity/**"],
   "imports": {
     "@/": "./",
     "@sanity/client": "npm:@sanity/client@^6.28.4",

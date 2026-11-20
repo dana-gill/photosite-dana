@@ -1,42 +1,34 @@
-import type { SanityPhoto } from "../../types/sanity.ts";
+import type { SanityPhoto } from "../types/sanity.ts";
 import { Head } from "fresh/runtime";
-import { Image } from "../../components/Image.tsx";
-import { PageHeader } from "../../components/PageHeader.tsx";
-import { define } from "../../utils.ts";
-import {
-  getAlbumBySlug,
-  getPhotosByAlbumSlug,
-} from "../../services/cache-manager.ts";
+import { Image } from "../components/Image.tsx";
+import { PageHeader } from "../components/PageHeader.tsx";
+import { define } from "../utils.ts";
+import { getPhotosByCategory } from "../services/cache-manager.ts";
+import { CATEGORY_LABELS, isCategory } from "../types/category.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const slug = ctx.params.slug;
-    const [album, photos] = await Promise.all([
-      getAlbumBySlug(ctx.state.kv, slug),
-      getPhotosByAlbumSlug(ctx.state.kv, slug),
-    ]);
-
-    if (!album) {
+    const param = ctx.params.category;
+    if (!isCategory(param)) {
       return new Response("Not Found", { status: 404 });
     }
 
-    return { data: { album, photos: photos ?? [] } };
+    const photos = await getPhotosByCategory(ctx.state.kv, param);
+    return { data: { category: param, photos } };
   },
 });
 
-export default define.page<typeof handler>(function AlbumPage({ data }) {
-  const { album, photos } = data;
+export default define.page<typeof handler>(function CategoryPage({ data }) {
+  const { category, photos } = data;
+  const label = CATEGORY_LABELS[category];
 
   return (
     <div class="px-4 py-8 mx-auto md:min-h-screen bg-gray-50">
       <Head>
-        <title>{album.title} - Dana Gill Photography</title>
+        <title>{label} - Dana Gill Photography</title>
       </Head>
       <div class="max-w-7xl mx-auto">
-        <PageHeader
-          title={album.title}
-          subtitle={album.description ?? ""}
-        />
+        <PageHeader title={label} subtitle="" />
         <div class="flex flex-wrap justify-evenly gap-6 items-center">
           {photos.map((photo: SanityPhoto) => (
             <div
