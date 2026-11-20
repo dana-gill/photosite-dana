@@ -67,6 +67,32 @@ deno run -A --env scripts/reset-sanity-content.ts            # dry run
 deno run -A --env scripts/reset-sanity-content.ts --confirm  # delete
 ```
 
+## Import photos
+
+`scripts/import-photos.ts` uploads local photos to Sanity. It is a dry run by
+default (no uploads, no writes).
+
+```
+deno run -A --env scripts/import-photos.ts [root=assets]            # dry run
+deno run -A --env scripts/import-photos.ts [root=assets] --confirm  # import
+```
+
+Folder layout (`assets/` is git-ignored):
+
+- `<root>/{architecture,couples,portraits}/` — `.jpg`, `.jpeg`, `.png` files.
+  Natural sort by file name sets `order` (1, 2, 3, ...). Other folders are
+  skipped with a warning.
+- `<root>/about/` — exactly 1 image. It is set on the `about` singleton (an
+  existing `altTitle` is kept). If the folder is missing, `about` is not
+  changed.
+- `<root>/carousel/` — byte-identical copies of category photos. They are
+  matched by SHA-1 and set as the carousel (weak refs, file name order). If any
+  file has no matching photo, the carousel is not set and the script exits 1.
+
+Re-runs are safe: a photo is not created twice for the same file in a category.
+Images are not resized (Sanity CDN serves resized versions). After the import,
+refresh the cache (`POST /api/cache/refresh`).
+
 ## API Endpoints
 
 ### Public and token

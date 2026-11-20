@@ -236,7 +236,7 @@ The script:
 - Uses one transaction for each batch of 100 IDs.
 - The existing photos are not retagged. All photos come again from the local category folders (Step 15).
 
-### Step 15 — Import photos from the local category folders
+### **[DONE]** Step 15 — Import photos from the local category folders
 **File:** `scripts/import-photos.ts` (new)
 
 The source is a folder with one subfolder for each category. The subfolder names are the category values:
