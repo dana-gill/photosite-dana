@@ -131,7 +131,7 @@ export const isCategory = (value: string): value is Category =>
   - `getPhotosByCategory(kv, category): Promise<ReadonlyArray<SanityPhoto>>`: returns `[]` if the key is missing.
   - `saveCategoryPhotos(kv, category, photos)`.
 
-### Step 6 — Update the cache refresh
+### **[DONE]** Step 6 — Update the cache refresh
 **Files:** `services/image-service.ts`, `routes/api/cache/refresh.ts`, `routes/api/admin/cache/refresh.ts`, `main.ts`
 
 - `refreshAlbumCache` → `refreshCategoryCache`: fetch `CATEGORIES.map(fetchPhotosByCategory)` and the carousel ids in parallel, then save each category and the carousel. Also fetch the `about` singleton and save it to KV `["about"]`.

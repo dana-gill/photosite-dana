@@ -1,36 +1,30 @@
+import { CATEGORIES } from "../types/category.ts";
 import {
-  fetchAllAlbums,
+  fetchAbout,
   fetchCarouselPhotoIds,
-  fetchPhotosByAlbum,
+  fetchPhotosByCategory,
 } from "./photo-service.ts";
 import {
-  clearAlbumCache,
-  saveAllAlbumPhotos,
+  saveAbout,
   saveCarouselEntries,
+  saveCategoryPhotos,
 } from "./cache-manager.ts";
 
-export const refreshAlbumCache = async (kv: Deno.Kv): Promise<void> => {
-  await clearAlbumCache(kv);
-
-  const [albums, carouselPhotoIds] = await Promise.all([
-    fetchAllAlbums(),
+export const refreshCategoryCache = async (kv: Deno.Kv): Promise<void> => {
+  const [photoArrays, carouselPhotoIds, about] = await Promise.all([
+    Promise.all(CATEGORIES.map(fetchPhotosByCategory)),
     fetchCarouselPhotoIds(),
+    fetchAbout(),
   ]);
 
-  const albumPhotosEntries = await Promise.all(
-    albums.map(async (album) => {
-      const photos = await fetchPhotosByAlbum(album._id);
-      return [album.slug, { album, photos }] as const;
-    }),
-  );
-
-  const albumPhotosMap = new Map(albumPhotosEntries);
-
   await Promise.all([
-    saveAllAlbumPhotos(kv, albumPhotosMap),
+    ...CATEGORIES.map((category, index) =>
+      saveCategoryPhotos(kv, category, photoArrays[index] ?? [])
+    ),
     saveCarouselEntries(
       kv,
       carouselPhotoIds.map((photoId) => ({ photoId })),
     ),
+    saveAbout(kv, about),
   ]);
 };

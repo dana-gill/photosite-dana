@@ -1,5 +1,5 @@
-import { clearAlbumCache } from "../../../services/cache-manager.ts";
-import { refreshAlbumCache } from "../../../services/image-service.ts";
+import { clearCategoryCache } from "../../../services/cache-manager.ts";
+import { refreshCategoryCache } from "../../../services/image-service.ts";
 import { define } from "../../../utils.ts";
 
 const PHOTOSITE_TOKEN = Deno.env.get("PHOTOSITE_TOKEN") ?? "";
@@ -19,8 +19,8 @@ export const handler = define.handlers({
     try {
       const kv = ctx.state.kv;
 
-      await clearAlbumCache(kv);
-      await refreshAlbumCache(kv);
+      await clearCategoryCache(kv);
+      await refreshCategoryCache(kv);
 
       return new Response(
         JSON.stringify({

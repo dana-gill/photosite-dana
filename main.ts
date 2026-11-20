@@ -2,12 +2,14 @@
 
 import { App, staticFiles } from "fresh";
 import type { State, WorkPreview } from "./utils.ts";
-import { refreshAlbumCache } from "./services/image-service.ts";
+import { refreshCategoryCache } from "./services/image-service.ts";
 import {
   getAlbumBySlug,
   getAllAlbumSlugs,
   getPhotosByAlbumSlug,
+  getPhotosByCategory,
 } from "./services/cache-manager.ts";
+import { CATEGORIES } from "./types/category.ts";
 import type { NavLink } from "./types/nav.ts";
 
 export const app = new App<State>();
@@ -17,15 +19,22 @@ const kv = await Deno.openKv();
 console.log("Checking cache status...");
 
 try {
-  const slugs = await getAllAlbumSlugs(kv);
+  const photoArrays = await Promise.all(
+    CATEGORIES.map((category) => getPhotosByCategory(kv, category)),
+  );
 
-  if (slugs.length === 0) {
+  if (photoArrays.every((photos) => photos.length === 0)) {
     console.log("Cache empty — fetching from Sanity...");
-    await refreshAlbumCache(kv);
-    const refreshedSlugs = await getAllAlbumSlugs(kv);
-    console.log(`Cache initialized: ${refreshedSlugs.length} albums`);
+    await refreshCategoryCache(kv);
+    const refreshed = await Promise.all(
+      CATEGORIES.map((category) => getPhotosByCategory(kv, category)),
+    );
+    refreshed.forEach((photos, index) =>
+      console.log(`Cache initialized: ${CATEGORIES[index]} ${photos.length}`)
+    );
   } else {
-    console.log(`Cache is fresh: ${slugs.length} albums`);
+    const total = photoArrays.reduce((sum, photos) => sum + photos.length, 0);
+    console.log(`Cache is fresh: ${total} photos`);
   }
 } catch (error) {
   console.error("Failed to initialize cache:", error);
