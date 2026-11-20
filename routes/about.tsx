@@ -22,7 +22,7 @@ export default define.page<typeof handler>(function About({ data }) {
         <meta property="og:title" content="About - Dana Gill Photography" />
         <meta
           property="og:description"
-          content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film."
+          content="Dana Gill is a photographer based in Berlin who captures portraits and architecture with analog film."
         />
         {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
         <meta
@@ -32,7 +32,7 @@ export default define.page<typeof handler>(function About({ data }) {
         <meta name="twitter:title" content="About - Dana Gill Photography" />
         <meta
           name="twitter:description"
-          content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film."
+          content="Dana Gill is a photographer based in Berlin who captures portraits and architecture."
         />
         {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
       </Head>
@@ -51,10 +51,10 @@ export default define.page<typeof handler>(function About({ data }) {
         )}
         <div class="prose prose-lg mx-auto fade-in-images">
           <p class="text-gray-700 leading-relaxed">
-            Dana Gill is a Filipino engineer and hobby-artist based in Berlin.
-            She shoots primarily with analog on a Minolta and Canon Pixma, but
-            also enjoys shooting digitally. She enjoys capturing portraits and
-            various moments from travels and life.
+            Dana Gill is a Filipino photographer.
+            She shoots primarily with analog on a Minolta, but
+            also enjoys shooting digitally with older cameras. She enjoys capturing couples, portraits and
+            architecture.
           </p>
           <p class="text-gray-700 mt-4 leading-relaxed">
             All photos on this site were shot on analog film unless stated
