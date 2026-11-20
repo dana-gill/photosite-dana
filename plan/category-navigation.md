@@ -112,7 +112,7 @@ export const isCategory = (value: string): value is Category =>
 - Remove `SanityAlbum`.
 - In `SanityPhoto`, replace `album: { _ref } | null` with `category: Category`.
 
-### Step 4 — Replace the album queries with category queries
+### **[DONE]** Step 4 — Replace the album queries with category queries
 **File:** `services/album-service.ts` → rename to `services/photo-service.ts`
 
 - Remove `createAlbum`, `updateAlbum`, `deleteAlbum`, `fetchAlbumBySlug`, `fetchAllAlbums`, `fetchPhotosByAlbum`.

@@ -4,7 +4,7 @@ import { getCarouselEntries } from "../../services/cache-manager.ts";
 import {
   fetchAllAlbums,
   fetchPhotosByAlbum,
-} from "../../services/album-service.ts";
+} from "../../services/photo-service.ts";
 import CarouselEditor from "../../islands/CarouselEditor.tsx";
 import type { CarouselEntry, SanityPhoto } from "../../types/sanity.ts";
 

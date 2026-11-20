@@ -1,6 +1,6 @@
 import { Head } from "fresh/runtime";
 import { define } from "../../utils.ts";
-import { fetchAllAlbums } from "../../services/album-service.ts";
+import { fetchAllAlbums } from "../../services/photo-service.ts";
 import { getPhotosByAlbumSlug } from "../../services/cache-manager.ts";
 import CreateAlbumForm from "../../islands/CreateAlbumForm.tsx";
 import DeleteAlbumButton from "../../islands/DeleteAlbumButton.tsx";

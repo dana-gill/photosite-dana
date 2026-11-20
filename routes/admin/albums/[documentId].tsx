@@ -4,7 +4,7 @@ import { define } from "../../../utils.ts";
 import {
   fetchAllAlbums,
   fetchPhotosByAlbum,
-} from "../../../services/album-service.ts";
+} from "../../../services/photo-service.ts";
 import AlbumPhotoSorter from "../../../islands/AlbumPhotoSorter.tsx";
 import EditAlbumFields from "../../../islands/EditAlbumFields.tsx";
 import PhotoUploader from "../../../islands/PhotoUploader.tsx";

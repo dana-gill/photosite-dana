@@ -1,6 +1,6 @@
 import { define } from "../../../../utils.ts";
 import { isAdminAuthorized } from "../../../../services/admin-auth-service.ts";
-import { createAlbum } from "../../../../services/album-service.ts";
+import { createAlbum } from "../../../../services/photo-service.ts";
 
 interface CreateAlbumBody {
   readonly title: string;

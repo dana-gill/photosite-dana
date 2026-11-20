@@ -2,7 +2,7 @@ import {
   fetchAllAlbums,
   fetchCarouselPhotoIds,
   fetchPhotosByAlbum,
-} from "./album-service.ts";
+} from "./photo-service.ts";
 import {
   clearAlbumCache,
   saveAllAlbumPhotos,

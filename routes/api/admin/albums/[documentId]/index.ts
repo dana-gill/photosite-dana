@@ -3,7 +3,7 @@ import { isAdminAuthorized } from "../../../../../services/admin-auth-service.ts
 import {
   deleteAlbum,
   updateAlbum,
-} from "../../../../../services/album-service.ts";
+} from "../../../../../services/photo-service.ts";
 import { refreshAlbumCache } from "../../../../../services/image-service.ts";
 
 interface UpdateAlbumBody {
