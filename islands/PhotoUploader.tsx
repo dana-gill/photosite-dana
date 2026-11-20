@@ -1,8 +1,9 @@
+import type { Category } from "../types/category.ts";
 import { useState } from "preact/hooks";
-import { UPLOAD_END_EVENT, UPLOAD_START_EVENT } from "./AlbumPhotoSorter.tsx";
+import { UPLOAD_END_EVENT, UPLOAD_START_EVENT } from "./consts.ts";
 
 interface PhotoUploaderProps {
-  readonly albumId: string;
+  readonly category: Category;
 }
 
 type UploadStatus = "pending" | "uploading" | "done" | "error";
@@ -23,27 +24,34 @@ const refreshCache = async (): Promise<void> => {
   await fetch("/api/admin/cache/refresh", { method: "POST" });
 };
 
-const uploadFile = async (albumId: string, file: File): Promise<void> => {
+const extractError = (body: unknown): string => {
+  if (typeof body !== "object" || body === null) return "Upload failed";
+  if (!("error" in body)) return "Upload failed";
+  return typeof body.error === "string" ? body.error : "Upload failed";
+};
+
+const uploadFile = async (category: Category, file: File): Promise<void> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`/api/admin/albums/${albumId}/photos`, {
+  const response = await fetch(`/api/admin/categories/${category}/photos`, {
     method: "POST",
     body: formData,
   });
 
   if (!response.ok) {
-    const body = await response.json();
-    throw new Error(body.error ?? "Upload failed");
+    const body: unknown = await response.json();
+    throw new Error(extractError(body));
   }
 };
 
-export default function PhotoUploader({ albumId }: PhotoUploaderProps) {
+export default function PhotoUploader({ category }: PhotoUploaderProps) {
   const [uploads, setUploads] = useState<ReadonlyArray<FileUploadState>>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFilesChange = (e: Event) => {
-    const input = e.target as HTMLInputElement;
+    const input = e.currentTarget;
+    if (!(input instanceof HTMLInputElement)) return;
     const files = Array.from(input.files ?? []);
     setUploads(files.map(buildInitialState));
   };
@@ -72,7 +80,7 @@ export default function PhotoUploader({ albumId }: PhotoUploaderProps) {
         await chain;
         setFileStatus(index, "uploading", null);
         try {
-          await uploadFile(albumId, upload.file);
+          await uploadFile(category, upload.file);
           setFileStatus(index, "done", null);
           finalStatuses.push("done");
         } catch (err) {

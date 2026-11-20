@@ -1,4 +1,4 @@
-import { CATEGORIES } from "../types/category.ts";
+import { CATEGORIES, type Category } from "../types/category.ts";
 import {
   fetchAbout,
   fetchCarouselPhotoIds,
@@ -27,4 +27,11 @@ export const refreshCategoryCache = async (kv: Deno.Kv): Promise<void> => {
     ),
     saveAbout(kv, about),
   ]);
+};
+
+export const refreshCategory = async (
+  kv: Deno.Kv,
+  category: Category,
+): Promise<void> => {
+  await saveCategoryPhotos(kv, category, await fetchPhotosByCategory(category));
 };

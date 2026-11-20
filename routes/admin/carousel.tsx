@@ -1,10 +1,8 @@
 import { Head } from "fresh/runtime";
 import { define } from "../../utils.ts";
 import { getCarouselEntries } from "../../services/cache-manager.ts";
-import {
-  fetchAllAlbums,
-  fetchPhotosByAlbum,
-} from "../../services/photo-service.ts";
+import { CATEGORIES } from "../../types/category.ts";
+import { fetchPhotosByCategory } from "../../services/photo-service.ts";
 import CarouselEditor from "../../islands/CarouselEditor.tsx";
 import type { CarouselEntry, SanityPhoto } from "../../types/sanity.ts";
 
@@ -15,14 +13,10 @@ interface CarouselPageData {
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const [albums, initialEntries] = await Promise.all([
-      fetchAllAlbums(),
+    const [photoArrays, initialEntries] = await Promise.all([
+      Promise.all(CATEGORIES.map(fetchPhotosByCategory)),
       getCarouselEntries(ctx.state.kv),
     ]);
-
-    const photoArrays = await Promise.all(
-      albums.map((a) => fetchPhotosByAlbum(a._id)),
-    );
     const allPhotos = photoArrays.flat();
 
     return { data: { allPhotos, initialEntries } satisfies CarouselPageData };

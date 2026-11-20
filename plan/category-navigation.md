@@ -162,7 +162,7 @@ export const isCategory = (value: string): value is Category =>
 - `routes/api/recent-images.ts` and `routes/index.tsx`: read photos from all categories (`CATEGORIES.map(getPhotosByCategory)`), not from album slugs.
 - Add a redirect so old links work: `routes/work/[...path].tsx` returns `301` to `/`. Alternatively, map known old album slugs to a category.
 
-### Step 10 — Change the admin from albums to categories
+### **[DONE]** Step 10 — Change the admin from albums to categories
 **Files:**
 - `routes/admin/index.tsx`: list the three categories with photo counts and links to `/admin/categories/{category}`. Remove `CreateAlbumForm` and `DeleteAlbumButton`.
 - `routes/admin/albums/[documentId].tsx` → `routes/admin/categories/[category].tsx`: reuse `AlbumPhotoSorter` (rename it to `PhotoSorter`) and `PhotoUploader`.

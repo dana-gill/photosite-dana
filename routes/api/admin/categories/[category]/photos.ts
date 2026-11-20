@@ -1,12 +1,12 @@
 import { define } from "../../../../../utils.ts";
+import { isCategory } from "../../../../../types/category.ts";
 import { isAdminAuthorized } from "../../../../../services/admin-auth-service.ts";
 import {
   createPhoto,
   deletePhoto,
-  fetchPhotosByAlbum,
   uploadMediaFile,
 } from "../../../../../services/photo-service.ts";
-import { refreshAlbumCache } from "../../../../../services/image-service.ts";
+import { refreshCategory } from "../../../../../services/image-service.ts";
 
 export const handler = define.handlers({
   POST: async (ctx) => {
@@ -20,7 +20,14 @@ export const handler = define.handlers({
       });
     }
 
-    const albumId = ctx.params.documentId;
+    const category = ctx.params.category;
+    if (!isCategory(category)) {
+      return new Response(JSON.stringify({ error: "Invalid category" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const formData = await ctx.req.formData();
     const file = formData.get("file");
     const altTitle = formData.get("altTitle");
@@ -33,17 +40,14 @@ export const handler = define.handlers({
       });
     }
 
-    const existingPhotos = await fetchPhotosByAlbum(albumId);
-    const nextOrder = existingPhotos.length;
-
     const assetId = await uploadMediaFile(file);
     const photo = await createPhoto(
-      albumId,
+      category,
       assetId,
       typeof altTitle === "string" ? altTitle : "",
       typeof caption === "string" ? caption : "",
-      nextOrder,
     );
+    await refreshCategory(ctx.state.kv, category);
 
     return new Response(JSON.stringify({ data: photo }), {
       status: 201,
@@ -62,6 +66,14 @@ export const handler = define.handlers({
       });
     }
 
+    const category = ctx.params.category;
+    if (!isCategory(category)) {
+      return new Response(JSON.stringify({ error: "Invalid category" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const url = new URL(ctx.req.url);
     const photoId = url.searchParams.get("photoDocumentId");
 
@@ -76,7 +88,7 @@ export const handler = define.handlers({
     }
 
     await deletePhoto(photoId);
-    await refreshAlbumCache(ctx.state.kv);
+    await refreshCategory(ctx.state.kv, category);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

@@ -1,12 +1,11 @@
 import type { SanityPhoto } from "../types/sanity.ts";
+import type { Category } from "../types/category.ts";
 import Sortable from "sortablejs";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { UPLOAD_END_EVENT, UPLOAD_START_EVENT } from "./consts.ts";
 
-export { UPLOAD_END_EVENT, UPLOAD_START_EVENT };
-
-interface AlbumPhotoSorterProps {
-  readonly albumId: string;
+interface PhotoSorterProps {
+  readonly category: Category;
   readonly photos: ReadonlyArray<SanityPhoto>;
 }
 
@@ -18,8 +17,8 @@ interface SortablePhoto {
   order: number;
 }
 
-export default function AlbumPhotoSorter(
-  { albumId, photos }: AlbumPhotoSorterProps,
+export default function PhotoSorter(
+  { category, photos }: PhotoSorterProps,
 ) {
   const listRef = useRef<HTMLUListElement>(null);
   const sortableRef = useRef<Sortable | null>(null);
@@ -98,7 +97,7 @@ export default function AlbumPhotoSorter(
     const deleteResults = await Promise.all(
       pendingDeletes.map((photoId) =>
         fetch(
-          `/api/admin/albums/${albumId}/photos?photoDocumentId=${
+          `/api/admin/categories/${category}/photos?photoDocumentId=${
             encodeURIComponent(photoId)
           }`,
           { method: "DELETE" },
@@ -113,7 +112,7 @@ export default function AlbumPhotoSorter(
     }
 
     const reorderResponse = await fetch(
-      `/api/admin/albums/${albumId}/reorder`,
+      `/api/admin/categories/${category}/reorder`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
