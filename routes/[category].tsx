@@ -29,7 +29,7 @@ export default define.page<typeof handler>(function CategoryPage({ data }) {
       </Head>
       <div class="max-w-7xl mx-auto">
         <PageHeader title={label} subtitle="" />
-        <div class="flex flex-wrap justify-evenly gap-6 items-center">
+        <div class="flex flex-col items-center gap-6">
           {photos.map((photo: SanityPhoto) => (
             <div
               key={photo._id}
