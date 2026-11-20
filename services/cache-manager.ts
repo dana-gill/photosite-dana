@@ -1,52 +1,27 @@
 /// <reference lib="deno.unstable" />
 
+import type { Category } from "../types/category.ts";
 import type {
   CarouselEntry,
-  SanityAlbum,
+  SanityAbout,
   SanityPhoto,
 } from "../types/sanity.ts";
 
-export const clearAlbumCache = async (kv: Deno.Kv): Promise<void> => {
-  const albumEntries = kv.list({ prefix: ["album"] });
-  const albumPhotosEntries = kv.list({ prefix: ["album-photos"] });
-
-  const deleteAlbums = (async () => {
-    for await (const entry of albumEntries) {
-      await kv.delete(entry.key);
-    }
-  })();
-
-  const deleteAlbumPhotos = (async () => {
-    for await (const entry of albumPhotosEntries) {
-      await kv.delete(entry.key);
-    }
-  })();
-
-  await Promise.all([deleteAlbums, deleteAlbumPhotos]);
-};
-
-export const getAlbumBySlug = async (
+const deleteByPrefix = async (
   kv: Deno.Kv,
-  slug: string,
-): Promise<SanityAlbum | null> => {
-  const result = await kv.get<SanityAlbum>(["album", slug]);
-  return result.value;
-};
-
-export const getAllAlbumSlugs = async (
-  kv: Deno.Kv,
-): Promise<ReadonlyArray<string>> => {
-  const entries = kv.list({ prefix: ["album"] });
-  const slugs: string[] = [];
-
-  for await (const entry of entries) {
-    const slug = entry.key[1];
-    if (typeof slug === "string") {
-      slugs.push(slug);
-    }
+  prefix: Deno.KvKey,
+): Promise<void> => {
+  for await (const entry of kv.list({ prefix })) {
+    await kv.delete(entry.key);
   }
+};
 
-  return slugs;
+export const clearCategoryCache = async (kv: Deno.Kv): Promise<void> => {
+  await Promise.all([
+    deleteByPrefix(kv, ["category-photos"]),
+    deleteByPrefix(kv, ["album"]),
+    deleteByPrefix(kv, ["album-photos"]),
+  ]);
 };
 
 export const getCarouselEntries = async (
@@ -56,48 +31,39 @@ export const getCarouselEntries = async (
   return result.value ?? [];
 };
 
-export const getPhotosByAlbumSlug = async (
+export const getPhotosByCategory = async (
   kv: Deno.Kv,
-  slug: string,
-): Promise<ReadonlyArray<SanityPhoto> | null> => {
+  category: Category,
+): Promise<ReadonlyArray<SanityPhoto>> => {
   const result = await kv.get<ReadonlyArray<SanityPhoto>>([
-    "album-photos",
-    slug,
+    "category-photos",
+    category,
   ]);
+  return result.value ?? [];
+};
+
+export const saveCategoryPhotos = async (
+  kv: Deno.Kv,
+  category: Category,
+  photos: ReadonlyArray<SanityPhoto>,
+): Promise<void> => {
+  await kv.set(["category-photos", category], photos);
+};
+
+export const getAbout = async (kv: Deno.Kv): Promise<SanityAbout | null> => {
+  const result = await kv.get<SanityAbout>(["about"]);
   return result.value;
 };
 
-export const saveAlbum = async (
+export const saveAbout = async (
   kv: Deno.Kv,
-  slug: string,
-  album: SanityAlbum,
+  about: SanityAbout | null,
 ): Promise<void> => {
-  await kv.set(["album", slug], album);
-};
-
-export const saveAlbumPhotos = async (
-  kv: Deno.Kv,
-  slug: string,
-  photos: ReadonlyArray<SanityPhoto>,
-): Promise<void> => {
-  await kv.set(["album-photos", slug], photos);
-};
-
-export const saveAllAlbumPhotos = async (
-  kv: Deno.Kv,
-  albumPhotosMap: ReadonlyMap<
-    string,
-    { album: SanityAlbum; photos: ReadonlyArray<SanityPhoto> }
-  >,
-): Promise<void> => {
-  const saveOperations = Array.from(albumPhotosMap.entries()).flatMap(
-    ([slug, { album, photos }]) => [
-      saveAlbum(kv, slug, album),
-      saveAlbumPhotos(kv, slug, photos),
-    ],
-  );
-
-  await Promise.all(saveOperations);
+  if (about === null) {
+    await kv.delete(["about"]);
+    return;
+  }
+  await kv.set(["about"], about);
 };
 
 export const saveCarouselEntries = async (

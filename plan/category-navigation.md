@@ -122,7 +122,7 @@ export const isCategory = (value: string): value is Category =>
 - Keep `deletePhoto`, `fetchPhotoById`, `fetchCarouselPhotoIds`, `updatePhotoOrder`, `uploadMediaFile`. Update their projections to `category`.
 - Update all imports.
 
-### Step 5 — Update the cache manager
+### **[DONE]** Step 5 — Update the cache manager
 **File:** `services/cache-manager.ts`
 
 - Remove `clearAlbumCache`, `getAlbumBySlug`, `getAllAlbumSlugs`, `getPhotosByAlbumSlug`, `saveAlbum`, `saveAlbumPhotos`, `saveAllAlbumPhotos`.
