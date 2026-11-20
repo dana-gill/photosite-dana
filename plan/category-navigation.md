@@ -17,7 +17,7 @@ Each category page is a flat, ordered gallery of photos.
 - **Fixed category list:** The categories are a fixed list in code and in the Sanity schema, not Sanity documents. A new category needs a code change. This is acceptable for three stable categories.
 - **Order:** The existing `order` number field stays. It now gives the order inside a category. You set the order with drag and drop on the admin category page (Step 11) or by editing the number in Studio.
 - **Carousel:** The `carousel` singleton stays and still references `photo` documents. It is set again after the reset. The references become weak, admin saves go to Sanity, and the home page has a fallback (Step 12).
-- **Existing content:** All `album` and `photo` documents are deleted and the photos are uploaded again with a category (Step 14). Step 14 also gives an option to retag the existing photos instead.
+- **Existing content:** Start fresh. Delete all `album` and `photo` documents and their image assets (Step 14). Do not retag the existing photos. Import the new photos from the local category folders `assets/{architecture,couples,portraits}/` (Step 15).
 
 ## Data Model
 
@@ -46,7 +46,7 @@ Each step is one commit. Do the steps in order.
 - Add the `category` field to the `photo` schema, with the options list and `validation: (r) => r.required()`.
 - Remove the `album` reference field from `photo`.
 - Remove the `album` document type and take it out of the schema index.
-- In the desk structure, add one list for each category (filter `_type == "photo" && category == "<value>"`, ordered by `order asc`). This makes retagging and review easy.
+- In the desk structure, add one list for each category (filter `_type == "photo" && category == "<value>"`, ordered by `order asc`). This makes review of each category easy.
 - Deploy the schema (`npx sanity schema deploy` or deploy the hosted Studio).
 
 ### Step 2 — Add the category constants and type
@@ -191,16 +191,41 @@ The script:
   1. Unsets `carousel.images`. Sanity does not delete a document that is still referenced.
   2. Deletes all `photo` documents.
   3. Deletes all `album` documents.
-  4. Optionally (`--purge-assets`) deletes `sanity.imageAsset` docs that nothing references.
+  4. Deletes all `sanity.imageAsset` docs that nothing references, so no old images stay in the dataset.
 - Uses one transaction for each batch of 100 IDs.
+- The existing photos are not retagged. All photos come again from the local category folders (Step 15).
 
-**Option without re-upload:** Do not delete the photos. Set `category` on each existing photo in the Studio category lists (Step 1), then delete only the `album` docs and unset `photo.album`. This keeps the uploaded assets and the carousel refs.
+### Step 15 — Import photos from the local category folders
+**File:** `scripts/import-photos.ts` (new)
 
-### Step 15 — Deploy, add content, verify
+The source is a folder with one subfolder for each category. The subfolder names are the category values:
+
+```
+assets/
+  architecture/   45 images
+  couples/         6 images
+  portraits/      12 images
+```
+
+- **Usage:** `deno run -A --env scripts/import-photos.ts [root=assets] [--confirm]`
+- **Input checks:**
+  - Read only the subfolders whose names pass `isCategory`. For any other subfolder, print a warning and skip it.
+  - Take only image files: `.jpg`, `.jpeg` and `.png`, with any letter case (the folders have `.JPG`, `.JPEG`, `.jpg` and `.PNG`). Skip `.DS_Store` and all other files.
+- **Order:** Sort the files in each folder by name with a natural sort (`IMG_2029` before `IMG_10001`). Set `order = index + 1`. Change the order later in `/admin` (Step 11).
+- **Dry run (the default):** For each category, print the file count and the first and last file names. Do not upload.
+- **With `--confirm`, for each file:**
+  1. Upload with `client.assets.upload("image", stream, { filename })`.
+  2. Create a `photo` document with `{ image, category, order }`. `altTitle` and `caption` stay empty, and you can add them later in Studio or `/admin`.
+- **Re-runs:** Sanity removes duplicate assets by content hash. Before the script creates a `photo`, it checks whether a `photo` already uses that asset in that category. If one does, it skips the file. This means a failed run can be started again with no duplicate photos.
+- **Speed:** Upload 3 files at the same time. Print progress (`architecture 12/45`) and a list of failures at the end. If a file fails, the run continues and the script exits with code 1.
+- **Size:** The folders hold about 150 MB, and some files are larger than 5 MB. Sanity accepts these files, and the site gets smaller versions through the Sanity image CDN. Do not resize the files before upload.
+- **Git:** Add `assets/architecture/`, `assets/couples/`, `assets/portraits/` and `.DS_Store` to `.gitignore`. Do not commit 150 MB of photos. Sanity is the stored copy.
+
+### Step 16 — Deploy, add content, verify
 Do these in order:
 1. Deploy Steps 1–13. The category pages show "No images found" until content exists.
-2. Run Step 14 (or retag the existing photos).
-3. Upload and tag the photos for each category.
+2. Export the backup and run Step 14 with `--confirm`.
+3. Run Step 15 without flags (dry run) and check the counts: 45 / 6 / 12. Then run it again with `--confirm`.
 4. Set the carousel again in `/admin/carousel`. Until you do this, the home page shows the fallback (the first photo of each category).
 5. Call `POST /api/cache/refresh`.
 6. Verify:
