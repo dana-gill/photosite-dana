@@ -55,6 +55,18 @@ npx sanity deploy        # hosted Studio (danagill-photosite)
 You can also run `deno task studio` from the repo root. Schema types: `photo`,
 `carousel` and `about` (`carousel` and `about` are singletons).
 
+## Reset content (destructive)
+
+`scripts/reset-sanity-content.ts` deletes all `album` and `photo` documents
+(drafts included) and all unreferenced image assets. It never deletes the
+`about` document or its image. Export a backup first:
+`npx sanity dataset export production backup-<date>.tar.gz`
+
+```
+deno run -A --env scripts/reset-sanity-content.ts            # dry run
+deno run -A --env scripts/reset-sanity-content.ts --confirm  # delete
+```
+
 ## API Endpoints
 
 ### Public and token

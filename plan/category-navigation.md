@@ -219,7 +219,7 @@ After the reset, most photos in the current carousel will not exist. The carouse
 - Schema types: `photo`, `carousel`.
 - "Sanity Studio" section: the Studio is in `photosite-sanity/` in this repo and uses npm, not Deno (`npm install`, `npm run dev`, `npx sanity deploy`). Remove the incorrect "`deno task dev` from there" text. Add: keep `photosite-sanity/schemaTypes/categories.ts` the same as `types/category.ts`.
 
-### Step 14 — Reset the Sanity content (destructive)
+### **[DONE]** Step 14 — Reset the Sanity content (destructive)
 **File:** `scripts/reset-sanity-content.ts` (new)
 
 **Warning:** This step permanently deletes content in the `production` dataset. Before you run it, export a backup:
