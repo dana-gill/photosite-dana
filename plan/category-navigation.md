@@ -40,14 +40,48 @@ The `["album", slug]` and `["album-photos", slug]` keys are removed.
 
 Each step is one commit. Do the steps in order.
 
-### Step 1 — Update the Sanity Studio schema
-**Project:** `photosite-sanity/` (a separate project, not in this repo)
+### Step 1 — Create the Sanity Studio in this repo
+**Folder:** `photosite-sanity/` (new, in this repo)
 
-- Add the `category` field to the `photo` schema, with the options list and `validation: (r) => r.required()`.
-- Remove the `album` reference field from `photo`.
-- Remove the `album` document type and take it out of the schema index.
-- In the desk structure, add one list for each category (filter `_type == "photo" && category == "<value>"`, ordered by `order asc`). This makes review of each category easy.
-- Deploy the schema (`npx sanity schema deploy` or deploy the hosted Studio).
+The original Studio code is lost. The content is in Sanity project `serh8kfd`, not in the Studio, so a new Studio connects to the same data. The old schema is not needed because the content starts fresh (Step 14).
+
+**Before you start:** Log in with `npx sanity login`. You must be a member of project `serh8kfd` (check at sanity.io/manage). If you are not a member, create a new project, and update `SANITY_PROJECT_ID`, `CLAUDE.md` and this plan.
+
+1. **Scaffold:** Run `npm create sanity@latest -- --project serh8kfd --dataset production --template clean --typescript --output-path photosite-sanity`. Delete any scaffold files that are `.js` or `.mjs` (for example the ESLint config), or change them to `.ts`.
+2. **Files:**
+   ```
+   photosite-sanity/
+     package.json         # own npm deps (sanity, @sanity/vision); scripts: dev, build, deploy
+     tsconfig.json
+     sanity.cli.ts        # projectId, dataset, studioHost
+     sanity.config.ts     # structureTool({ structure }), visionTool()
+     structure.ts         # desk lists (see 5)
+     schemaTypes/
+       index.ts           # export const schemaTypes = [photo, carousel]
+       categories.ts      # copy of CATEGORIES + labels
+       photo.ts
+       carousel.ts
+   ```
+3. **`photo` schema:**
+   - Fields: `image` (hotspot, required), `category` (string, required, `options.list` from `categories.ts`, `layout: "radio"`), `order` (number, required, integer, min 1), `altTitle` (string), `caption` (string).
+   - `orderings`: by `order asc`.
+   - `preview`: the image as media, `altTitle` or the file name as the title, and `category · #order` as the subtitle.
+   - There is no `album` type and no `album` field.
+4. **`carousel` schema:** A singleton with a fixed `_id` `"carousel"`. `images` is an array of references to `photo` with `weak: true` (see Step 12). In `sanity.config.ts`, hide the "create" and "delete" actions for this type.
+5. **Desk structure (`structure.ts`):**
+   - One list for each category (`_type == "photo" && category == $category`, sorted by `order asc`), in the order Architecture, Couples, Portraits.
+   - "All photos".
+   - "Carousel", which opens the singleton directly.
+6. **Category list in sync:** The Studio is an npm/Vite project, so it does not import the Deno file `types/category.ts`. `schemaTypes/categories.ts` holds a copy, with a comment that says to keep it the same as `types/category.ts`. A new category needs a change in both files.
+7. **Separate the two toolchains:**
+   - `deno.json`: add `"photosite-sanity/**"` to `exclude`, so `deno fmt`, `deno lint` and `deno check` skip the Studio.
+   - `.gitignore`: add `photosite-sanity/.sanity/` and `photosite-sanity/dist/`. The `node_modules/` rule already covers the Studio.
+   - Optional root task in `deno.json`: `"studio": "cd photosite-sanity && npm run dev"`.
+8. **Run and deploy:**
+   - Local: run `npm install` and `npm run dev` in `photosite-sanity/` (http://localhost:3333).
+   - Schema: `npx sanity schema deploy`.
+   - Hosted Studio: `npx sanity deploy` (`https://<studioHost>.sanity.studio`).
+9. **Old content:** Until Step 14 runs, old `album` docs and the `photo.album` fields show as unknown types or fields in the Studio. This is expected.
 
 ### Step 2 — Add the category constants and type
 **File:** `types/category.ts` (new)
@@ -151,10 +185,10 @@ The admin category page is the main place to set the order.
 - **New uploads:** These go to the end of the category (max `order` + 1, see Step 4).
 - **Deletes:** Leave gaps in the numbers. Gaps do not change the sort. The next save renumbers the photos 1..n.
 - **Studio:** You can also edit the `order` number directly in Studio. Then refresh the cache (`POST /api/admin/cache/refresh`). The Step 1 desk lists sort by `order`, so the Studio shows the same order as the site.
-- **Optional:** For drag and drop in Studio too, add `@sanity/orderable-document-list` to `photosite-sanity/`. This plugin uses its own `orderRank` field. Choose only one of `order` or `orderRank` as the source of truth. Do not use both. This plan uses `order`.
+- **Optional:** For drag and drop in Studio too, add `@sanity/orderable-document-list` to `photosite-sanity/package.json`. This plugin uses its own `orderRank` field. Choose only one of `order` or `orderRank` as the source of truth. Do not use both. This plan uses `order`.
 
 ### Step 12 — Rebuild the home page carousel
-**Files:** `photosite-sanity/` carousel schema, `routes/api/admin/carousel/index.ts`, `islands/CarouselEditor.tsx`, `routes/admin/carousel.tsx`, `routes/index.tsx`, `services/photo-service.ts`
+**Files:** `photosite-sanity/schemaTypes/carousel.ts`, `routes/api/admin/carousel/index.ts`, `islands/CarouselEditor.tsx`, `routes/admin/carousel.tsx`, `routes/index.tsx`, `services/photo-service.ts`
 
 After the reset, most photos in the current carousel will not exist. The carousel must be set again from the new category photos, and it must not break when a photo is deleted.
 
@@ -178,6 +212,7 @@ After the reset, most photos in the current carousel will not exist. The carouse
 
 - Replace the "Adding a New Album" section with "Adding Photos to a Category". Steps: upload in Studio or `/admin`, set the category and order, then refresh the cache.
 - Schema types: `photo`, `carousel`.
+- "Sanity Studio" section: the Studio is in `photosite-sanity/` in this repo and uses npm, not Deno (`npm install`, `npm run dev`, `npx sanity deploy`). Remove the incorrect "`deno task dev` from there" text. Add: keep `photosite-sanity/schemaTypes/categories.ts` the same as `types/category.ts`.
 
 ### Step 14 — Reset the Sanity content (destructive)
 **File:** `scripts/reset-sanity-content.ts` (new)
