@@ -243,7 +243,7 @@ The source is a folder with one subfolder for each category. The subfolder names
 
 ```
 assets/
-  architecture/   45 images
+  architecture/   27 images
   couples/         6 images
   portraits/      12 images
 ```
@@ -258,7 +258,7 @@ assets/
   1. Upload with `client.assets.upload("image", stream, { filename })`.
   2. Create a `photo` document with `{ image, category, order }`. `altTitle` and `caption` stay empty, and you can add them later in Studio or `/admin`.
 - **Re-runs:** Sanity removes duplicate assets by content hash. Before the script creates a `photo`, it checks whether a `photo` already uses that asset in that category. If one does, it skips the file. This means a failed run can be started again with no duplicate photos.
-- **Speed:** Upload 3 files at the same time. Print progress (`architecture 12/45`) and a list of failures at the end. If a file fails, the run continues and the script exits with code 1.
+- **Speed:** Upload 3 files at the same time. Print progress (`architecture 12/27`) and a list of failures at the end. If a file fails, the run continues and the script exits with code 1.
 - **Size:** The folders hold about 150 MB, and some files are larger than 5 MB. Sanity accepts these files, and the site gets smaller versions through the Sanity image CDN. Do not resize the files before upload.
 - **`assets/about/` (one image):** Upload the image and set it on the `about` singleton (`createOrReplace({ _id: "about", _type: "about", image })`). If the folder has 0 or more than 1 image, stop with an error. If the folder does not exist, do not change `about`.
 - **`assets/carousel/` (10 images):** Each file is a byte-identical copy of a photo in a category folder (this was checked). Sanity gives the same content the same asset id, so the script finds each carousel file's asset, finds the `photo` that uses that asset, and sets `carousel.images` to those photos as weak refs, in file-name order. A carousel file that matches no category photo is an error. It is reported, and the carousel is not set.
@@ -268,7 +268,7 @@ assets/
 Do these in order:
 1. Deploy Steps 1–13. The category pages show "No images found" until content exists.
 2. Export the backup and run Step 14 with `--confirm`.
-3. Run Step 15 without flags (dry run) and check the counts: 45 / 6 / 12. Then run it again with `--confirm`.
+3. Run Step 15 without flags (dry run) and check the counts: 27 / 6 / 12. Then run it again with `--confirm`.
 4. Check the carousel set by Step 15 from `assets/carousel/`. Change it in `/admin/carousel` if needed. If the carousel is empty, the home page shows the fallback (the first photo of each category).
 5. Call `POST /api/cache/refresh`.
 6. Verify:
