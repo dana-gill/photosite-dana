@@ -48,7 +48,10 @@ export default define.page<typeof handler>(function CategoryEditor({ data }) {
         <h2 class="text-lg font-medium text-gray-900">
           Photos ({photos.length})
         </h2>
-        <p class="text-sm text-gray-500">Drag to reorder, then save.</p>
+        <p class="text-sm text-gray-500">
+          Drag photos or use the move buttons, then save. New uploads go to the
+          end.
+        </p>
       </div>
       <PhotoSorter category={category} photos={photos} />
       <PhotoUploader category={category} />

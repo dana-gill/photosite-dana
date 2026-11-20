@@ -1,27 +1,20 @@
 import { define } from "../../../../../utils.ts";
 import { isCategory } from "../../../../../types/category.ts";
 import { isAdminAuthorized } from "../../../../../services/admin-auth-service.ts";
-import { updatePhotoOrder } from "../../../../../services/photo-service.ts";
+import {
+  fetchPhotosByCategory,
+  setCategoryOrder,
+} from "../../../../../services/photo-service.ts";
 import { refreshCategory } from "../../../../../services/image-service.ts";
 
-interface PhotoOrderEntry {
-  readonly _id: string;
-  readonly order: number;
-}
-
 interface ReorderBody {
-  readonly photos: ReadonlyArray<PhotoOrderEntry>;
+  readonly photoIds: ReadonlyArray<string>;
 }
-
-const isPhotoOrderEntry = (value: unknown): value is PhotoOrderEntry =>
-  typeof value === "object" && value !== null &&
-  "_id" in value && typeof value._id === "string" &&
-  "order" in value && typeof value.order === "number";
 
 const isReorderBody = (value: unknown): value is ReorderBody =>
   typeof value === "object" && value !== null &&
-  "photos" in value && Array.isArray(value.photos) &&
-  value.photos.every(isPhotoOrderEntry);
+  "photoIds" in value && Array.isArray(value.photoIds) &&
+  value.photoIds.every((id: unknown) => typeof id === "string");
 
 const jsonError = (error: string, status: number): Response =>
   new Response(JSON.stringify({ error }), {
@@ -46,10 +39,18 @@ export const handler = define.handlers({
 
     const raw: unknown = await ctx.req.json().catch(() => null);
     if (!isReorderBody(raw)) return jsonError("Invalid body", 400);
+    const { photoIds } = raw;
 
-    await Promise.all(
-      raw.photos.map((entry) => updatePhotoOrder(entry._id, entry.order)),
+    const currentIds = (await fetchPhotosByCategory(category)).map((p) =>
+      p._id
     );
+    const requested = new Set(photoIds);
+    const isSameSet = currentIds.length === photoIds.length &&
+      requested.size === photoIds.length &&
+      currentIds.every((id) => requested.has(id));
+    if (!isSameSet) return jsonError("Reload the page", 409);
+
+    await setCategoryOrder(photoIds);
     await refreshCategory(ctx.state.kv, category);
 
     return new Response(JSON.stringify({ success: true }), {

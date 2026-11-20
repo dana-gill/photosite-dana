@@ -9,48 +9,45 @@ interface PhotoSorterProps {
   readonly photos: ReadonlyArray<SanityPhoto>;
 }
 
-interface SortablePhoto {
-  readonly _id: string;
-  readonly imageUrl: string;
-  readonly altTitle: string | null;
-  readonly caption: string | null;
-  order: number;
-}
+const moveItem = (
+  items: ReadonlyArray<SanityPhoto>,
+  from: number,
+  to: number,
+): ReadonlyArray<SanityPhoto> => {
+  const moved = items[from];
+  if (moved === undefined) return items;
+  const rest = items.filter((_, index) => index !== from);
+  return [...rest.slice(0, to), moved, ...rest.slice(to)];
+};
 
-export default function PhotoSorter(
-  { category, photos }: PhotoSorterProps,
-) {
+export default function PhotoSorter({ category, photos }: PhotoSorterProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const sortableRef = useRef<Sortable | null>(null);
-  const [items, setItems] = useState<SortablePhoto[]>(
-    photos.map((p) => ({
-      _id: p._id,
-      imageUrl: p.image.asset.url,
-      altTitle: p.altTitle,
-      caption: p.caption,
-      order: p.order,
-    })),
-  );
+  const [items, setItems] = useState<ReadonlyArray<SanityPhoto>>(photos);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingDisabled, setUploadingDisabled] = useState(false);
+  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>(
+    [],
+  );
 
   useEffect(() => {
-    if (!listRef.current) return;
+    const list = listRef.current;
+    if (!list) return;
 
-    sortableRef.current = Sortable.create(listRef.current, {
+    sortableRef.current = Sortable.create(list, {
       animation: 150,
-      onEnd: () => {
-        if (!listRef.current) return;
-        const nodes = Array.from(listRef.current.querySelectorAll("[data-id]"));
-        setItems((prev) =>
-          nodes.map((node, index) => {
-            const id = node.getAttribute("data-id") ?? "";
-            const found = prev.find((p) => p._id === id);
-            return { ...(found ?? prev[index]), order: index };
-          })
-        );
+      draggable: "li",
+      filter: "button",
+      onEnd: (evt) => {
+        const { oldIndex, newIndex, item, from } = evt;
+        if (oldIndex === undefined || newIndex === undefined) return;
+        // Undo Sortable's DOM move so Preact keeps ownership of the list.
+        from.removeChild(item);
+        from.insertBefore(item, from.children[oldIndex] ?? null);
+        setItems((prev) => moveItem(prev, oldIndex, newIndex));
+        setSaved(false);
       },
     });
 
@@ -79,9 +76,10 @@ export default function PhotoSorter(
     };
   }, []);
 
-  const [pendingDeletes, setPendingDeletes] = useState<ReadonlyArray<string>>(
-    [],
-  );
+  const handleMove = (index: number, to: number) => {
+    setItems((prev) => moveItem(prev, index, to));
+    setSaved(false);
+  };
 
   const handleDelete = (photoId: string) => {
     setPendingDeletes((prev) => [...prev, photoId]);
@@ -116,16 +114,16 @@ export default function PhotoSorter(
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          photos: items.map((p) => ({
-            _id: p._id,
-            order: p.order,
-          })),
-        }),
+        body: JSON.stringify({ photoIds: items.map((p) => p._id) }),
       },
     );
 
     setSaving(false);
+
+    if (reorderResponse.status === 409) {
+      setError("Photos changed. Reload the page.");
+      return;
+    }
 
     if (!reorderResponse.ok) {
       setError("Failed to save order. Please try again.");
@@ -136,13 +134,15 @@ export default function PhotoSorter(
     setSaved(true);
   };
 
+  const lastIndex = items.length - 1;
+
   return (
     <div>
       <ul
         ref={listRef}
         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6"
       >
-        {items.map((photo) => (
+        {items.map((photo, index) => (
           <li
             key={photo._id}
             data-id={photo._id}
@@ -153,15 +153,36 @@ export default function PhotoSorter(
             }`}
           >
             <img
-              src={photo.imageUrl}
+              src={photo.image.asset.url}
               alt={photo.altTitle ?? photo.caption ?? ""}
               class="w-full h-32 object-cover"
             />
+            <span class="absolute top-1 left-1 min-w-6 h-6 px-1 flex items-center justify-center bg-black/60 text-white text-xs rounded">
+              {index + 1}
+            </span>
             {(photo.altTitle ?? photo.caption) && (
               <p class="text-xs text-gray-500 px-2 py-1 truncate">
                 {photo.altTitle ?? photo.caption}
               </p>
             )}
+            <div class="flex gap-1 px-2 pb-2">
+              <button
+                type="button"
+                onClick={() => handleMove(index, 0)}
+                disabled={uploadingDisabled || index === 0}
+                class="flex-1 px-1 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+              >
+                Move to top
+              </button>
+              <button
+                type="button"
+                onClick={() => handleMove(index, lastIndex)}
+                disabled={uploadingDisabled || index === lastIndex}
+                class="flex-1 px-1 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+              >
+                Move to bottom
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => handleDelete(photo._id)}
@@ -181,7 +202,7 @@ export default function PhotoSorter(
           disabled={saving || uploadingDisabled}
           class="px-4 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save changes"}
+          {saving ? "Saving…" : "Save order"}
         </button>
         {saved && <span class="text-sm text-green-600">Saved!</span>}
         {error && <span class="text-sm text-red-600">{error}</span>}

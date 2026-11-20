@@ -171,7 +171,7 @@ export const isCategory = (value: string): value is Category =>
 - Delete `islands/CreateAlbumForm.tsx`, `islands/DeleteAlbumButton.tsx`, `islands/EditAlbumFields.tsx`.
 - `routes/admin/carousel.tsx`: build the photo library from `fetchPhotosByCategory` for each category, not from albums.
 
-### Step 11 — Photo order within a category
+### **[DONE]** Step 11 — Photo order within a category
 **Files:** `islands/PhotoSorter.tsx`, `routes/api/admin/categories/[category]/reorder.ts`, `services/photo-service.ts`, `routes/admin/categories/[category].tsx`
 
 The admin category page is the main place to set the order.

@@ -89,11 +89,14 @@ export const fetchAbout = (): Promise<SanityAbout | null> =>
     `*[_type == "about" && _id == "about"][0]{ _id, ${IMAGE_PROJECTION}, altTitle }`,
   );
 
-export const updatePhotoOrder = async (
-  _id: string,
-  order: number,
+export const setCategoryOrder = async (
+  photoIds: ReadonlyArray<string>,
 ): Promise<void> => {
-  await getClient().patch(_id).set({ order }).commit();
+  const transaction = photoIds.reduce(
+    (tx, id, index) => tx.patch(id, (p) => p.set({ order: index + 1 })),
+    getClient().transaction(),
+  );
+  await transaction.commit();
 };
 
 export const uploadMediaFile = async (file: File): Promise<string> => {
