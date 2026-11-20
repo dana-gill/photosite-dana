@@ -106,7 +106,7 @@ export const isCategory = (value: string): value is Category =>
 
 `as const` is a const assertion, not a type cast. If the lint rules do not allow it, write the union type by hand and give `CATEGORIES` the type `ReadonlyArray<Category>`.
 
-### Step 3 — Update the Sanity types
+### **[DONE]** Step 3 — Update the Sanity types
 **File:** `types/sanity.ts`
 
 - Remove `SanityAlbum`.
