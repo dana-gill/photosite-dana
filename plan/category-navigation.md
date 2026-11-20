@@ -17,6 +17,7 @@ Each category page is a flat, ordered gallery of photos.
 - **Fixed category list:** The categories are a fixed list in code and in the Sanity schema, not Sanity documents. A new category needs a code change. This is acceptable for three stable categories.
 - **Order:** The existing `order` number field stays. It now gives the order inside a category. You set the order with drag and drop on the admin category page (Step 11) or by editing the number in Studio.
 - **Carousel:** The `carousel` singleton stays and still references `photo` documents. It is set again after the reset. The references become weak, admin saves go to Sanity, and the home page has a fallback (Step 12).
+- **About photo:** This is a separate `about` singleton, not a category photo. The reset never deletes it. The image comes from `assets/about/`.
 - **Existing content:** Start fresh. Delete all `album` and `photo` documents and their image assets (Step 14). Do not retag the existing photos. Import the new photos from the local category folders `assets/{architecture,couples,portraits}/` (Step 15).
 
 ## Data Model
@@ -57,10 +58,11 @@ The original Studio code is lost. The content is in Sanity project `serh8kfd`, n
      sanity.config.ts     # structureTool({ structure }), visionTool()
      structure.ts         # desk lists (see 5)
      schemaTypes/
-       index.ts           # export const schemaTypes = [photo, carousel]
+       index.ts           # export const schemaTypes = [photo, carousel, about]
        categories.ts      # copy of CATEGORIES + labels
        photo.ts
        carousel.ts
+       about.ts
    ```
 3. **`photo` schema:**
    - Fields: `image` (hotspot, required), `category` (string, required, `options.list` from `categories.ts`, `layout: "radio"`), `order` (number, required, integer, min 1), `altTitle` (string), `caption` (string).
@@ -68,10 +70,12 @@ The original Studio code is lost. The content is in Sanity project `serh8kfd`, n
    - `preview`: the image as media, `altTitle` or the file name as the title, and `category · #order` as the subtitle.
    - There is no `album` type and no `album` field.
 4. **`carousel` schema:** A singleton with a fixed `_id` `"carousel"`. `images` is an array of references to `photo` with `weak: true` (see Step 12). In `sanity.config.ts`, hide the "create" and "delete" actions for this type.
+   **`about` schema:** A singleton with a fixed `_id` `"about"`. Fields: `image` (hotspot, required) and `altTitle` (string). It is not a `photo`, so it is not in any category, and it is not in the reset (Step 14). Hide the "create" and "delete" actions in the same way as `carousel`.
 5. **Desk structure (`structure.ts`):**
    - One list for each category (`_type == "photo" && category == $category`, sorted by `order asc`), in the order Architecture, Couples, Portraits.
    - "All photos".
    - "Carousel", which opens the singleton directly.
+   - "About", which opens the `about` singleton directly.
 6. **Category list in sync:** The Studio is an npm/Vite project, so it does not import the Deno file `types/category.ts`. `schemaTypes/categories.ts` holds a copy, with a comment that says to keep it the same as `types/category.ts`. A new category needs a change in both files.
 7. **Separate the two toolchains:**
    - `deno.json`: add `"photosite-sanity/**"` to `exclude`, so `deno fmt`, `deno lint` and `deno check` skip the Studio.
@@ -130,7 +134,7 @@ export const isCategory = (value: string): value is Category =>
 ### Step 6 — Update the cache refresh
 **Files:** `services/image-service.ts`, `routes/api/cache/refresh.ts`, `routes/api/admin/cache/refresh.ts`, `main.ts`
 
-- `refreshAlbumCache` → `refreshCategoryCache`: fetch `CATEGORIES.map(fetchPhotosByCategory)` and the carousel ids in parallel, then save each category and the carousel.
+- `refreshAlbumCache` → `refreshCategoryCache`: fetch `CATEGORIES.map(fetchPhotosByCategory)` and the carousel ids in parallel, then save each category and the carousel. Also fetch the `about` singleton and save it to KV `["about"]`.
 - The refresh routes call `clearCategoryCache` and `refreshCategoryCache`.
 - `main.ts` startup check: warm the cache when all three category keys are empty.
 
@@ -154,6 +158,7 @@ export const isCategory = (value: string): value is Category =>
 ### Step 9 — Remove the old work code
 - Delete `routes/work/[slug].tsx`, `islands/WorkModal.tsx`, `islands/WorkModalMobile.tsx`, `routes/api/work-previews.ts`.
 - `routes/api/albums/index.ts` and `routes/api/albums/[album].ts`: replace them with `routes/api/categories/index.ts` and `routes/api/categories/[category].ts` (same token auth, category summaries). If no client uses them, delete them.
+- `routes/about.tsx`: read the About photo from KV `["about"]`, not from the `"about"` album (that album does not exist in Sanity, so the live page shows no photo now). Replace the old Strapi `og:image` and `twitter:image` URLs on this page and in `routes/_app.tsx` with the About image URL. The Strapi host no longer responds.
 - `routes/api/recent-images.ts` and `routes/index.tsx`: read photos from all categories (`CATEGORIES.map(getPhotosByCategory)`), not from album slugs.
 - Add a redirect so old links work: `routes/work/[...path].tsx` returns `301` to `/`. Alternatively, map known old album slugs to a category.
 
@@ -227,6 +232,7 @@ The script:
   2. Deletes all `photo` documents.
   3. Deletes all `album` documents.
   4. Deletes all `sanity.imageAsset` docs that nothing references, so no old images stay in the dataset.
+- The script never deletes the `about` document or its image asset. Its queries filter on `_type in ["photo", "album"]` only. Before the asset purge, it also adds the `about` image asset id to a keep list. The dry run prints "kept: about (<filename>)".
 - Uses one transaction for each batch of 100 IDs.
 - The existing photos are not retagged. All photos come again from the local category folders (Step 15).
 
@@ -244,7 +250,7 @@ assets/
 
 - **Usage:** `deno run -A --env scripts/import-photos.ts [root=assets] [--confirm]`
 - **Input checks:**
-  - Read only the subfolders whose names pass `isCategory`. For any other subfolder, print a warning and skip it.
+  - Read the subfolders whose names pass `isCategory` as photos. `about/` and `carousel/` have special rules (see below). For any other subfolder, print a warning and skip it.
   - Take only image files: `.jpg`, `.jpeg` and `.png`, with any letter case (the folders have `.JPG`, `.JPEG`, `.jpg` and `.PNG`). Skip `.DS_Store` and all other files.
 - **Order:** Sort the files in each folder by name with a natural sort (`IMG_2029` before `IMG_10001`). Set `order = index + 1`. Change the order later in `/admin` (Step 11).
 - **Dry run (the default):** For each category, print the file count and the first and last file names. Do not upload.
@@ -254,14 +260,16 @@ assets/
 - **Re-runs:** Sanity removes duplicate assets by content hash. Before the script creates a `photo`, it checks whether a `photo` already uses that asset in that category. If one does, it skips the file. This means a failed run can be started again with no duplicate photos.
 - **Speed:** Upload 3 files at the same time. Print progress (`architecture 12/45`) and a list of failures at the end. If a file fails, the run continues and the script exits with code 1.
 - **Size:** The folders hold about 150 MB, and some files are larger than 5 MB. Sanity accepts these files, and the site gets smaller versions through the Sanity image CDN. Do not resize the files before upload.
-- **Git:** Add `assets/architecture/`, `assets/couples/`, `assets/portraits/` and `.DS_Store` to `.gitignore`. Do not commit 150 MB of photos. Sanity is the stored copy.
+- **`assets/about/` (one image):** Upload the image and set it on the `about` singleton (`createOrReplace({ _id: "about", _type: "about", image })`). If the folder has 0 or more than 1 image, stop with an error. If the folder does not exist, do not change `about`.
+- **`assets/carousel/` (10 images):** Each file is a byte-identical copy of a photo in a category folder (this was checked). Sanity gives the same content the same asset id, so the script finds each carousel file's asset, finds the `photo` that uses that asset, and sets `carousel.images` to those photos as weak refs, in file-name order. A carousel file that matches no category photo is an error. It is reported, and the carousel is not set.
+- **Git:** Add `assets/architecture/`, `assets/couples/`, `assets/portraits/`, `assets/about/`, `assets/carousel/` and `.DS_Store` to `.gitignore`. Do not commit 150 MB of photos. Sanity is the stored copy.
 
 ### Step 16 — Deploy, add content, verify
 Do these in order:
 1. Deploy Steps 1–13. The category pages show "No images found" until content exists.
 2. Export the backup and run Step 14 with `--confirm`.
 3. Run Step 15 without flags (dry run) and check the counts: 45 / 6 / 12. Then run it again with `--confirm`.
-4. Set the carousel again in `/admin/carousel`. Until you do this, the home page shows the fallback (the first photo of each category).
+4. Check the carousel set by Step 15 from `assets/carousel/`. Change it in `/admin/carousel` if needed. If the carousel is empty, the home page shows the fallback (the first photo of each category).
 5. Call `POST /api/cache/refresh`.
 6. Verify:
    - `/architecture`, `/couples` and `/portraits` return 200 and show photos in order.
@@ -273,3 +281,4 @@ Do these in order:
    - Save the carousel, call `POST /api/cache/refresh`, and reload `/`. The saved carousel still shows.
    - Delete a photo that is in the carousel. The delete works and the carousel skips that photo.
    - With an empty carousel, `/` shows the fallback photos.
+   - `/about` shows the About photo. After the reset, the `about` document and its asset still exist.
