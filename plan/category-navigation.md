@@ -41,7 +41,7 @@ The `["album", slug]` and `["album-photos", slug]` keys are removed.
 
 Each step is one commit. Do the steps in order.
 
-### Step 1 — Create the Sanity Studio in this repo
+### **[DONE]** Step 1 — Create the Sanity Studio in this repo
 **Folder:** `photosite-sanity/` (new, in this repo)
 
 The original Studio code is lost. The content is in Sanity project `serh8kfd`, not in the Studio, so a new Studio connects to the same data. The old schema is not needed because the content starts fresh (Step 14).

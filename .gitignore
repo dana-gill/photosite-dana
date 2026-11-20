@@ -12,3 +12,7 @@ node_modules/
 vendor/
 
 dev.log
+
+# Sanity Studio build output
+photosite-sanity/.sanity/
+photosite-sanity/dist/
