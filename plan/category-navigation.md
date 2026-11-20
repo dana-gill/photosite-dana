@@ -1,13 +1,13 @@
-# Category Navigation (Couples / Portraits / Architecture)
+# Category Navigation (Architecture / Couples / Portraits)
 
 ## Context
 The navbar has a "Work" button. It opens a modal (`WorkModal` / `WorkModalMobile`) that lists every Sanity `album`, and each album has a page at `/work/{slug}`.
 
 The new structure removes albums. The navbar shows three fixed categories:
 
-1. Couples → `/couples`
-2. Portraits → `/portraits`
-3. Architecture → `/architecture`
+1. Architecture → `/architecture`
+2. Couples → `/couples`
+3. Portraits → `/portraits`
 
 Each category page is a flat, ordered gallery of photos.
 
@@ -16,13 +16,13 @@ Each category page is a flat, ordered gallery of photos.
 - **One category per photo:** Each photo has exactly one `category` value.
 - **Fixed category list:** The categories are a fixed list in code and in the Sanity schema, not Sanity documents. A new category needs a code change. This is acceptable for three stable categories.
 - **Order:** The existing `order` number field stays. It now gives the order inside a category. You set the order with drag and drop on the admin category page (Step 11) or by editing the number in Studio.
-- **Carousel:** The `carousel` singleton does not change. It still references `photo` documents.
-- **Existing content:** All `album` and `photo` documents are deleted and the photos are uploaded again with a category (Step 13). Step 13 also gives an option to retag the existing photos instead.
+- **Carousel:** The `carousel` singleton stays and still references `photo` documents. It is set again after the reset. The references become weak, admin saves go to Sanity, and the home page has a fallback (Step 12).
+- **Existing content:** All `album` and `photo` documents are deleted and the photos are uploaded again with a category (Step 14). Step 14 also gives an option to retag the existing photos instead.
 
 ## Data Model
 
 ### Sanity schema (after)
-- **photo**: `image` (image, hotspot, required), `category` (string, required, options list `couples` | `portraits` | `architecture`, radio layout), `order` (number, required), `altTitle` (string), `caption` (string)
+- **photo**: `image` (image, hotspot, required), `category` (string, required, options list `architecture` | `couples` | `portraits`, radio layout), `order` (number, required), `altTitle` (string), `caption` (string)
 - **carousel**: no change (singleton, `images[]` → reference to `photo`)
 - **album**: removed
 
@@ -53,13 +53,13 @@ Each step is one commit. Do the steps in order.
 **File:** `types/category.ts` (new)
 
 ```ts
-export const CATEGORIES = ["couples", "portraits", "architecture"] as const;
+export const CATEGORIES = ["architecture", "couples", "portraits"] as const;
 export type Category = typeof CATEGORIES[number];
 
 export const CATEGORY_LABELS: Readonly<Record<Category, string>> = {
+  architecture: "Architecture",
   couples: "Couples",
   portraits: "Portraits",
-  architecture: "Architecture",
 };
 
 export const isCategory = (value: string): value is Category =>
@@ -110,7 +110,8 @@ export const isCategory = (value: string): value is Category =>
 ### Step 8 — Replace the Work modal with category links in the navbar
 **Files:** `islands/Nav.tsx`, `islands/consts.ts`, `routes/_app.tsx`, `utils.ts`, `main.ts`
 
-- `islands/consts.ts`: `NAV_LINKS` = the three category links (from `CATEGORIES` + `CATEGORY_LABELS`), then About.
+- There is no "Work" item. The navbar shows: site title (left), then Architecture, Couples, Portraits, About (right). The category links are plain links, with no dropdown or modal.
+- `islands/consts.ts`: `NAV_LINKS` = the three category links in `CATEGORIES` order (from `CATEGORIES` + `CATEGORY_LABELS`), then About.
 - `Nav.tsx`: remove the Work button, the modal state, the screen-size effect, and the `workLinks`/`workPreviews` props. Show `NAV_LINKS` only. On mobile, check that four links fit. If they do not, add a simple menu toggle.
 - `_app.tsx`: render `<Nav />` with no props.
 - `main.ts`: remove `fetchWorkLinks`, `fetchWorkPreviews` and the per-request KV reads in the middleware. Keep `ctx.state.kv`.
@@ -152,13 +153,33 @@ The admin category page is the main place to set the order.
 - **Studio:** You can also edit the `order` number directly in Studio. Then refresh the cache (`POST /api/admin/cache/refresh`). The Step 1 desk lists sort by `order`, so the Studio shows the same order as the site.
 - **Optional:** For drag and drop in Studio too, add `@sanity/orderable-document-list` to `photosite-sanity/`. This plugin uses its own `orderRank` field. Choose only one of `order` or `orderRank` as the source of truth. Do not use both. This plan uses `order`.
 
-### Step 12 — Update the documentation
+### Step 12 — Rebuild the home page carousel
+**Files:** `photosite-sanity/` carousel schema, `routes/api/admin/carousel/index.ts`, `islands/CarouselEditor.tsx`, `routes/admin/carousel.tsx`, `routes/index.tsx`, `services/photo-service.ts`
+
+After the reset, most photos in the current carousel will not exist. The carousel must be set again from the new category photos, and it must not break when a photo is deleted.
+
+- **Bug to fix first:** `POST /api/admin/carousel` writes only to KV, not to Sanity. The next cache refresh reads the old Sanity `carousel` doc, so admin carousel changes are lost. Change the route to:
+  1. Write to Sanity: `client.createOrReplace({ _id: "carousel", _type: "carousel", images: [...] })`. Each image is `{ _key, _type: "reference", _ref: photoId, _weak: true }`.
+  2. Then write the same entries to KV.
+  3. Parse the body with a type guard (`isSaveCarouselBody`). If the body is not valid, return 400.
+  4. If a photo id does not exist in Sanity, return 400.
+- **Weak references:** In the Studio schema, set `weak: true` on the `images[]` reference. A photo that is in the carousel can then be deleted. Without this, Sanity refuses the delete.
+- **Photo delete:** When a photo is deleted (admin or script), remove its ref from `carousel.images` in the same transaction. Then refresh the carousel in KV.
+- **Editor library:** `CarouselEditor` shows the photo library grouped by category, with Architecture / Couples / Portraits filter tabs. Each thumbnail shows its category. Keep paging (`CAROUSEL_LIBRARY_PAGE_SIZE`).
+- **Home page:**
+  - Build the photo map from `CATEGORIES.map(getPhotosByCategory)`, not from album slugs.
+  - Skip carousel entries that do not match a photo. The current filter already does this.
+  - **Fallback:** If no valid carousel photos remain, show the first photo of each category in order. The home page is then never empty after the reset.
+  - If there are no photos at all, show no carousel and no error.
+- **Admin warning:** On `/admin/carousel`, show "N carousel photos no longer exist" with a "Remove missing" button. This cleans old refs in one click.
+
+### Step 13 — Update the documentation
 **Files:** `CLAUDE.md`, `README.md`
 
 - Replace the "Adding a New Album" section with "Adding Photos to a Category". Steps: upload in Studio or `/admin`, set the category and order, then refresh the cache.
 - Schema types: `photo`, `carousel`.
 
-### Step 13 — Reset the Sanity content (destructive)
+### Step 14 — Reset the Sanity content (destructive)
 **File:** `scripts/reset-sanity-content.ts` (new)
 
 **Warning:** This step permanently deletes content in the `production` dataset. Before you run it, export a backup:
@@ -175,16 +196,20 @@ The script:
 
 **Option without re-upload:** Do not delete the photos. Set `category` on each existing photo in the Studio category lists (Step 1), then delete only the `album` docs and unset `photo.album`. This keeps the uploaded assets and the carousel refs.
 
-### Step 14 — Deploy, add content, verify
+### Step 15 — Deploy, add content, verify
 Do these in order:
-1. Deploy Steps 1–12. The category pages show "No images found" until content exists.
-2. Run Step 13 (or retag the existing photos).
-3. Upload and tag the photos for each category. Set the carousel again.
-4. Call `POST /api/cache/refresh`.
-5. Verify:
-   - `/couples`, `/portraits` and `/architecture` return 200 and show photos in order.
+1. Deploy Steps 1–13. The category pages show "No images found" until content exists.
+2. Run Step 14 (or retag the existing photos).
+3. Upload and tag the photos for each category.
+4. Set the carousel again in `/admin/carousel`. Until you do this, the home page shows the fallback (the first photo of each category).
+5. Call `POST /api/cache/refresh`.
+6. Verify:
+   - `/architecture`, `/couples` and `/portraits` return 200 and show photos in order.
    - `/fake` returns 404.
    - `/work/anything` redirects to `/`.
    - The home carousel works, and the admin upload, reorder and delete work.
    - Reorder a category in `/admin`, save, and reload the category page. The new order shows.
    - Send a reorder with a missing photo id. The server returns 409.
+   - Save the carousel, call `POST /api/cache/refresh`, and reload `/`. The saved carousel still shows.
+   - Delete a photo that is in the carousel. The delete works and the carousel skips that photo.
+   - With an empty carousel, `/` shows the fallback photos.
