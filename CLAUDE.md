@@ -1,25 +1,38 @@
 # Photosite Project Instructions
 
-## Adding a New Album
+## Adding Photos to a Category
 
-Albums are managed in Sanity Studio — no code changes are needed to add a new work page.
+Photos belong to one fixed category: `architecture`, `couples` or `portraits`.
 
-To add a new album:
-1. Open Sanity Studio at `photosite-sanity/` (run `deno task dev` from there, or use the hosted Studio)
-2. Create a new **Album** document with the desired `title`, `slug`, and `description`
-3. Create **Photo** documents linked to that album, each with an `image`, `order`, and optional `altTitle`/`caption`
-4. Trigger a cache refresh via `POST /api/admin/cache/refresh` (or restart the server)
+1. Upload the photo in Sanity Studio (`photosite-sanity/`) or on
+   `/admin/categories/{category}`
+2. Set `category` and `order` (the admin page sets both for you)
+3. Refresh the cache with `POST /api/admin/cache/refresh` (admin auth) or
+   `POST /api/cache/refresh`
 
-The album will automatically appear at `/work/{slug}` once the cache is populated.
+Pages live at `/architecture`, `/couples` and `/portraits`.
+
+Adding a new category needs a code change in both `types/category.ts` and
+`photosite-sanity/schemaTypes/categories.ts`.
 
 ## Environment Variables
 
-Replace any Strapi vars with:
 - `SANITY_PROJECT_ID` — Sanity project ID (`serh8kfd`)
 - `SANITY_DATASET` — dataset name (default: `production`)
 - `SANITY_API_TOKEN` — Sanity API token with write access
 
 ## Sanity Studio
 
-The Studio lives at `photosite-sanity/`. Install with `npm install` and run with `npm run dev`.
-Schema types: `album`, `photo`, `carousel` (singleton).
+The Studio lives in `photosite-sanity/` in this repo. It uses npm, not Deno.
+
+- Install: `npm install`
+- Run: `npm run dev` (http://localhost:3333), or `deno task studio` from the
+  repo root
+- Deploy schema: `npx sanity schema deploy`
+- Deploy Studio: `npx sanity deploy` (studioHost `danagill-photosite`)
+
+Schema types: `photo`, `carousel`, `about`. `carousel` and `about` are
+singletons.
+
+Rule: keep `photosite-sanity/schemaTypes/categories.ts` the same as
+`types/category.ts`.

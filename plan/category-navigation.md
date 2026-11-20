@@ -212,7 +212,7 @@ After the reset, most photos in the current carousel will not exist. The carouse
   - If there are no photos at all, show no carousel and no error.
 - **Admin warning:** On `/admin/carousel`, show "N carousel photos no longer exist" with a "Remove missing" button. This cleans old refs in one click.
 
-### Step 13 — Update the documentation
+### **[DONE]** Step 13 — Update the documentation
 **Files:** `CLAUDE.md`, `README.md`
 
 - Replace the "Adding a New Album" section with "Adding Photos to a Category". Steps: upload in Studio or `/admin`, set the category and order, then refresh the cache.
