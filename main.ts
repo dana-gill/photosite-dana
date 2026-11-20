@@ -1,16 +1,10 @@
 /// <reference lib="deno.unstable" />
 
 import { App, staticFiles } from "fresh";
-import type { State, WorkPreview } from "./utils.ts";
+import type { State } from "./utils.ts";
 import { refreshCategoryCache } from "./services/image-service.ts";
-import {
-  getAlbumBySlug,
-  getAllAlbumSlugs,
-  getPhotosByAlbumSlug,
-  getPhotosByCategory,
-} from "./services/cache-manager.ts";
+import { getPhotosByCategory } from "./services/cache-manager.ts";
 import { CATEGORIES } from "./types/category.ts";
-import type { NavLink } from "./types/nav.ts";
 
 export const app = new App<State>();
 
@@ -44,50 +38,11 @@ try {
   );
 }
 
-const fetchWorkLinks = async (
-  kv: Deno.Kv,
-): Promise<ReadonlyArray<NavLink>> => {
-  const slugs = await getAllAlbumSlugs(kv);
-  const albums = await Promise.all(
-    slugs.map((slug) => getAlbumBySlug(kv, slug)),
-  );
-  return albums
-    .filter((album): album is NonNullable<typeof album> => album !== null)
-    .map((album) => ({ href: `/work/${album.slug}`, label: album.title }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-};
-
-const fetchWorkPreviews = async (
-  kv: Deno.Kv,
-): Promise<ReadonlyArray<WorkPreview>> => {
-  const slugs = await getAllAlbumSlugs(kv);
-  const previews = await Promise.all(
-    slugs.map(async (slug): Promise<WorkPreview | null> => {
-      const photos = await getPhotosByAlbumSlug(kv, slug);
-      const first = photos?.[0];
-      if (!first || !first.image?.asset?.metadata) return null;
-      return {
-        height: first.image.asset.metadata.dimensions.height,
-        href: `/work/${slug}`,
-        imageUrl: first.image.asset.url,
-        width: first.image.asset.metadata.dimensions.width,
-      };
-    }),
-  );
-  return previews.filter((p): p is WorkPreview => p !== null);
-};
-
 app.use(staticFiles());
 
 app.use(async (ctx) => {
-  const [workLinks, workPreviews] = await Promise.all([
-    fetchWorkLinks(kv),
-    fetchWorkPreviews(kv),
-  ]);
   ctx.state.shared = "hello";
   ctx.state.kv = kv;
-  ctx.state.workLinks = workLinks;
-  ctx.state.workPreviews = workPreviews;
   return await ctx.next();
 });
 

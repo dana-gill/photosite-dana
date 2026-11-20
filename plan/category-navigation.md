@@ -145,7 +145,7 @@ export const isCategory = (value: string): value is Category =>
 - Page: use the same grid markup as the current `routes/work/[slug].tsx` (`PageHeader` with `CATEGORY_LABELS[category]`, an `Image` grid, and the "No images found" empty state).
 - Fresh matches static routes first, so `/about` and `/admin` are not affected.
 
-### Step 8 — Replace the Work modal with category links in the navbar
+### **[DONE]** Step 8 — Replace the Work modal with category links in the navbar
 **Files:** `islands/Nav.tsx`, `islands/consts.ts`, `routes/_app.tsx`, `utils.ts`, `main.ts`
 
 - There is no "Work" item. The navbar shows: site title (left), then Architecture, Couples, Portraits, About (right). The category links are plain links, with no dropdown or modal.

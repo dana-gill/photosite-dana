@@ -1,10 +1,7 @@
 import { define } from "../utils.ts";
 import Nav from "../islands/Nav.tsx";
 
-export default define.page(function App({ Component, state }) {
-  const workLinks = state.workLinks;
-  const workPreviews = state.workPreviews;
-
+export default define.page(function App({ Component }) {
   return (
     <html>
       {
@@ -45,7 +42,7 @@ export default define.page(function App({ Component, state }) {
         <link rel="icon" type="image/jpeg" href="/favicon.jpg" />
       </head>
       <body>
-        <Nav workLinks={workLinks} workPreviews={workPreviews} />
+        <Nav />
         <Component />
       </body>
     </html>
