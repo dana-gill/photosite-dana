@@ -155,7 +155,7 @@ export const isCategory = (value: string): value is Category =>
 - `main.ts`: remove `fetchWorkLinks`, `fetchWorkPreviews` and the per-request KV reads in the middleware. Keep `ctx.state.kv`.
 - `utils.ts`: remove `WorkPreview`, `workLinks` and `workPreviews` from `State`.
 
-### Step 9 — Remove the old work code
+### **[DONE]** Step 9 — Remove the old work code
 - Delete `routes/work/[slug].tsx`, `islands/WorkModal.tsx`, `islands/WorkModalMobile.tsx`, `routes/api/work-previews.ts`.
 - `routes/api/albums/index.ts` and `routes/api/albums/[album].ts`: replace them with `routes/api/categories/index.ts` and `routes/api/categories/[category].ts` (same token auth, category summaries). If no client uses them, delete them.
 - `routes/about.tsx`: read the About photo from KV `["about"]`, not from the `"about"` album (that album does not exist in Sanity, so the live page shows no photo now). Replace the old Strapi `og:image` and `twitter:image` URLs on this page and in `routes/_app.tsx` with the About image URL. The Strapi host no longer responds.

@@ -7,6 +7,7 @@ import { createDefine } from "fresh";
 export interface State {
   shared: string;
   kv: Deno.Kv;
+  ogImageUrl: string | null;
 }
 
 export const define = createDefine<State>();

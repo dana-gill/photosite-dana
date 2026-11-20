@@ -1,17 +1,14 @@
 import { define } from "../../utils.ts";
-import {
-  getAllAlbumSlugs,
-  getPhotosByAlbumSlug,
-} from "../../services/cache-manager.ts";
+import { getPhotosByCategory } from "../../services/cache-manager.ts";
+import { CATEGORIES } from "../../types/category.ts";
 import type { SanityPhoto } from "../../types/sanity.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const slugs = await getAllAlbumSlugs(ctx.state.kv);
     const photoArrays = await Promise.all(
-      slugs.map((slug) => getPhotosByAlbumSlug(ctx.state.kv, slug)),
+      CATEGORIES.map((category) => getPhotosByCategory(ctx.state.kv, category)),
     );
-    const allPhotos = photoArrays.flatMap((photos) => photos ?? []);
+    const allPhotos = photoArrays.flat();
 
     const randomPhotos: ReadonlyArray<SanityPhoto> = [...allPhotos]
       .sort(() => Math.random() - 0.5)

@@ -1,23 +1,23 @@
 import { define } from "../utils.ts";
 import {
-  getAllAlbumSlugs,
   getCarouselEntries,
-  getPhotosByAlbumSlug,
+  getPhotosByCategory,
 } from "../services/cache-manager.ts";
+import { CATEGORIES } from "../types/category.ts";
 import type { SanityPhoto } from "../types/sanity.ts";
 import CarouselWrapper from "../islands/CarouselWrapper.tsx";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const [carouselEntries, slugs] = await Promise.all([
+    const [carouselEntries, photoArrays] = await Promise.all([
       getCarouselEntries(ctx.state.kv),
-      getAllAlbumSlugs(ctx.state.kv),
+      Promise.all(
+        CATEGORIES.map((category) =>
+          getPhotosByCategory(ctx.state.kv, category)
+        ),
+      ),
     ]);
-
-    const photoArrays = await Promise.all(
-      slugs.map((slug) => getPhotosByAlbumSlug(ctx.state.kv, slug)),
-    );
-    const allPhotos = photoArrays.flatMap((photos) => photos ?? []);
+    const allPhotos = photoArrays.flat();
     const photoMap = new Map<string, SanityPhoto>(
       allPhotos.map((p) => [p._id, p]),
     );

@@ -1,7 +1,8 @@
 import { define } from "../utils.ts";
 import Nav from "../islands/Nav.tsx";
 
-export default define.page(function App({ Component }) {
+export default define.page(function App({ Component, state }) {
+  const ogImageUrl = state.ogImageUrl;
   return (
     <html>
       {
@@ -22,10 +23,7 @@ export default define.page(function App({ Component }) {
           property="og:description"
           content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film."
         />
-        <meta
-          property="og:image"
-          content="https://reassuring-peace-c7bac71a31.media.strapiapp.com/about_3_a193280a6a.jpg"
-        />
+        {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
         <meta property="og:url" content="https://www.danagill.photography" />
         <meta property="og:site_name" content="Dana Gill Photography" />
         <meta property="og:type" content="website" />
@@ -35,10 +33,7 @@ export default define.page(function App({ Component }) {
           name="twitter:description"
           content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film."
         />
-        <meta
-          name="twitter:image"
-          content="https://reassuring-peace-c7bac71a31.media.strapiapp.com/about_3_a193280a6a.jpg"
-        />
+        {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
         <link rel="icon" type="image/jpeg" href="/favicon.jpg" />
       </head>
       <body>

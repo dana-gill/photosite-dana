@@ -1,25 +1,19 @@
-import type { SanityPhoto } from "../types/sanity.ts";
+import type { SanityAbout } from "../types/sanity.ts";
 import { Head } from "fresh/runtime";
 import { Image } from "../components/Image.tsx";
 import { define } from "../utils.ts";
-import {
-  getAlbumBySlug,
-  getPhotosByAlbumSlug,
-} from "../services/cache-manager.ts";
+import { getAbout } from "../services/cache-manager.ts";
 
 export const handler = define.handlers({
   GET: async (ctx) => {
-    const album = await getAlbumBySlug(ctx.state.kv, "about");
-    if (!album) return { data: null };
-
-    const photos = await getPhotosByAlbumSlug(ctx.state.kv, "about");
-    const aboutPhoto = photos?.[0] ?? null;
-    return { data: aboutPhoto };
+    const about = await getAbout(ctx.state.kv);
+    return { data: about };
   },
 });
 
 export default define.page<typeof handler>(function About({ data }) {
-  const aboutPhoto: SanityPhoto | null = data;
+  const about: SanityAbout | null = data;
+  const ogImageUrl = about ? `${about.image.asset.url}?w=1200&fm=jpg` : null;
 
   return (
     <div class="px-4 py-8 mx-auto md:min-h-screen bg-gray-50">
@@ -30,10 +24,7 @@ export default define.page<typeof handler>(function About({ data }) {
           property="og:description"
           content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film."
         />
-        <meta
-          property="og:image"
-          content="https://reassuring-peace-c7bac71a31.media.strapiapp.com/about_3_a193280a6a.jpg"
-        />
+        {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
         <meta
           property="og:url"
           content="https://www.danagill.photography/about"
@@ -43,20 +34,17 @@ export default define.page<typeof handler>(function About({ data }) {
           name="twitter:description"
           content="Dana Gill is a Filipino engineer and hobby-artist based in Berlin, capturing portraits and moments from travels and life with analog film."
         />
-        <meta
-          name="twitter:image"
-          content="https://reassuring-peace-c7bac71a31.media.strapiapp.com/about_3_a193280a6a.jpg"
-        />
+        {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
       </Head>
       <div class="max-w-4xl mx-auto pt-20 flex flex-col md:flex-row gap-8">
-        {aboutPhoto && (
+        {about && (
           <div class="flex justify-flex-start fade-in-title">
             <div class="max-w-[1000px] max-h-[2000px]">
               <Image
-                alt={aboutPhoto.altTitle ?? aboutPhoto.caption ?? "About"}
-                height={aboutPhoto.image.asset.metadata?.dimensions.height ?? 0}
-                src={aboutPhoto.image.asset.url}
-                width={aboutPhoto.image.asset.metadata?.dimensions.width ?? 0}
+                alt={about.altTitle ?? "Dana Gill"}
+                height={about.image.asset.metadata?.dimensions.height ?? 0}
+                src={about.image.asset.url}
+                width={about.image.asset.metadata?.dimensions.width ?? 0}
               />
             </div>
           </div>
