@@ -138,7 +138,7 @@ export const isCategory = (value: string): value is Category =>
 - The refresh routes call `clearCategoryCache` and `refreshCategoryCache`.
 - `main.ts` startup check: warm the cache when all three category keys are empty.
 
-### Step 7 — Add the category page route
+### **[DONE]** Step 7 — Add the category page route
 **File:** `routes/[category].tsx` (new)
 
 - Handler: if `isCategory(ctx.params.category)` is false, return 404 (early return). If it is true, load `getPhotosByCategory`.
