@@ -51,18 +51,14 @@ export default define.page<typeof handler>(function About({ data }) {
         )}
         <div class="prose prose-lg mx-auto fade-in-images">
           <p class="text-gray-700 leading-relaxed">
-            Dana Gill is a Filipino photographer.
+            Dana Gill is a Filipino photographer based in Berlin.
             She shoots primarily with analog on a Minolta, but
             also enjoys shooting digitally with older cameras. She enjoys capturing couples, portraits and
             architecture.
           </p>
           <p class="text-gray-700 mt-4 leading-relaxed">
-            All photos on this site were shot on analog film unless stated
-            otherwise.
-          </p>
-          <p class="text-gray-700 mt-4 leading-relaxed">
             For inquiries, please reach out via email at danougill [@]
-            gmail.com.
+            gmail.com or reach out via <a href="https://www.instagram.com/dana__gill" class="underline hover:text-gray-900">Instagram</a>.
           </p>
         </div>
       </div>
