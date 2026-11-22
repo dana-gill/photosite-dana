@@ -108,7 +108,7 @@ export const fetchCarouselPhotoIds = async (): Promise<
       images: ReadonlyArray<{ _ref: string }> | null;
     } | null
   >(
-    `*[_type == "carousel"][0]{ "images": images[]{ _ref } }`,
+    `*[_id == "carousel"][0]{ "images": images[]{ _ref } }`,
   );
   return doc?.images?.map((img) => img._ref) ?? [];
 };
