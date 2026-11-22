@@ -3,18 +3,27 @@ import { isCategory } from "../../../../../types/category.ts";
 import { isAdminAuthorized } from "../../../../../services/admin-auth-service.ts";
 import {
   fetchPhotosByCategory,
-  setCategoryOrder,
+  isSafePhotoId,
+  saveCategoryChanges,
 } from "../../../../../services/photo-service.ts";
-import { refreshCategory } from "../../../../../services/image-service.ts";
+import {
+  refreshCarousel,
+  refreshCategory,
+} from "../../../../../services/image-service.ts";
 
 interface ReorderBody {
   readonly photoIds: ReadonlyArray<string>;
+  readonly deleteIds?: ReadonlyArray<string>;
 }
+
+const isIdArray = (value: unknown): value is ReadonlyArray<string> =>
+  Array.isArray(value) &&
+  value.every((id: unknown) => typeof id === "string" && isSafePhotoId(id));
 
 const isReorderBody = (value: unknown): value is ReorderBody =>
   typeof value === "object" && value !== null &&
-  "photoIds" in value && Array.isArray(value.photoIds) &&
-  value.photoIds.every((id: unknown) => typeof id === "string");
+  "photoIds" in value && isIdArray(value.photoIds) &&
+  (("deleteIds" in value) ? isIdArray(value.deleteIds) : true);
 
 const jsonError = (error: string, status: number): Response =>
   new Response(JSON.stringify({ error }), {
@@ -39,19 +48,21 @@ export const handler = define.handlers({
 
     const raw: unknown = await ctx.req.json().catch(() => null);
     if (!isReorderBody(raw)) return jsonError("Invalid body", 400);
-    const { photoIds } = raw;
+    const { photoIds, deleteIds = [] } = raw;
 
-    const currentIds = (await fetchPhotosByCategory(category)).map((p) =>
-      p._id
-    );
-    const requested = new Set(photoIds);
-    const isSameSet = currentIds.length === photoIds.length &&
-      requested.size === photoIds.length &&
-      currentIds.every((id) => requested.has(id));
+    const currentPhotos = await fetchPhotosByCategory(category);
+    const requested = new Set([...photoIds, ...deleteIds]);
+    const requestedCount = photoIds.length + deleteIds.length;
+    const isSameSet = currentPhotos.length === requestedCount &&
+      requested.size === requestedCount &&
+      currentPhotos.every((photo) => requested.has(photo._id));
     if (!isSameSet) return jsonError("Reload the page", 409);
 
-    await setCategoryOrder(photoIds);
-    await refreshCategory(ctx.state.kv, category);
+    await saveCategoryChanges(currentPhotos, photoIds, deleteIds);
+    await Promise.all([
+      refreshCategory(ctx.state.kv, category),
+      deleteIds.length > 0 ? refreshCarousel(ctx.state.kv) : Promise.resolve(),
+    ]);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

@@ -92,33 +92,22 @@ export default function PhotoSorter({ category, photos }: PhotoSorterProps) {
     setError(null);
     setSaved(false);
 
-    const deleteResults = await Promise.all(
-      pendingDeletes.map((photoId) =>
-        fetch(
-          `/api/admin/categories/${category}/photos?photoDocumentId=${
-            encodeURIComponent(photoId)
-          }`,
-          { method: "DELETE" },
-        )
-      ),
-    );
-
-    if (deleteResults.some((r) => !r.ok)) {
-      setSaving(false);
-      setError("Failed to delete one or more photos. Please try again.");
-      return;
-    }
-
     const reorderResponse = await fetch(
       `/api/admin/categories/${category}/reorder`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photoIds: items.map((p) => p._id) }),
+        body: JSON.stringify({
+          photoIds: items.map((p) => p._id),
+          deleteIds: pendingDeletes,
+        }),
       },
-    );
+    ).catch(() => null).finally(() => setSaving(false));
 
-    setSaving(false);
+    if (reorderResponse === null) {
+      setError("Network error. Please try again.");
+      return;
+    }
 
     if (reorderResponse.status === 409) {
       setError("Photos changed. Reload the page.");

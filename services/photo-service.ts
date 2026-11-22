@@ -126,13 +126,39 @@ export const fetchAbout = (): Promise<SanityAbout | null> =>
     `*[_type == "about" && _id == "about"][0]{ _id, ${IMAGE_PROJECTION}, altTitle }`,
   );
 
-export const setCategoryOrder = async (
+export const isSafePhotoId = (id: string): boolean => SAFE_ID_PATTERN.test(id);
+
+// Deletes photos and writes the new order in one transaction. Only photos
+// whose order changed are patched. Callers must pass ids that pass
+// isSafePhotoId.
+export const saveCategoryChanges = async (
+  currentPhotos: ReadonlyArray<SanityPhoto>,
   photoIds: ReadonlyArray<string>,
+  deleteIds: ReadonlyArray<string>,
 ): Promise<void> => {
+  const client = getClient();
+  const currentOrder = new Map(currentPhotos.map((p) => [p._id, p.order]));
+  const carouselIds = deleteIds.length === 0
+    ? []
+    : await fetchCarouselPhotoIds();
+  const carouselDeletes = deleteIds.filter((id) => carouselIds.includes(id));
+
+  const withCarousel = carouselDeletes.length === 0
+    ? client.transaction()
+    : client.transaction().patch(
+      "carousel",
+      (p) => p.unset(carouselDeletes.map((id) => `images[_ref == "${id}"]`)),
+    );
+  const withDeletes = deleteIds.reduce((tx, id) => tx.delete(id), withCarousel);
   const transaction = photoIds.reduce(
-    (tx, id, index) => tx.patch(id, (p) => p.set({ order: index + 1 })),
-    getClient().transaction(),
+    (tx, id, index) =>
+      currentOrder.get(id) === index + 1
+        ? tx
+        : tx.patch(id, (p) => p.set({ order: index + 1 })),
+    withDeletes,
   );
+
+  if (transaction.toJSON().length === 0) return;
   await transaction.commit();
 };
 
